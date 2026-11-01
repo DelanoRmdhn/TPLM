@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attachment;
 use App\Models\Classroom;
 use App\Models\Material;
+use App\Services\AttachmentUploader;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -30,88 +28,44 @@ class MaterialController extends Controller
         ]);
     }
 
-    public function store(Request $request, Classroom $classroom): RedirectResponse
+    public function store(Request $request, Classroom $classroom, AttachmentUploader $uploader): RedirectResponse
     {
         Gate::authorize('manage', $classroom);
-
-        $extensions = implode(',', Attachment::ALLOWED_EXTENSIONS);
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:5000'],
             'topic_id' => ['nullable', Rule::exists('topics', 'id')->where('classroom_id', $classroom->id)],
             'new_topic' => ['nullable', 'string', 'max:100'],
-            'files' => ['nullable', 'array', 'max:10'],
-            'files.*' => ['file', "extensions:{$extensions}", "mimes:{$extensions}", 'max:'.Attachment::MAX_SIZE_KB],
-            'links' => ['nullable', 'string', 'max:2000'],
+            ...AttachmentUploader::rules(),
         ], [
             'title.required' => 'Judul materi wajib diisi.',
             'topic_id.exists' => 'Topik tidak ditemukan.',
-            'files.max' => 'Maksimal 10 file per materi.',
-            'files.*.extensions' => 'File harus PDF, JPG, PNG, atau DOCX.',
-            'files.*.mimes' => 'File harus PDF, JPG, PNG, atau DOCX.',
-            'files.*.max' => 'Ukuran file maksimal 10 MB.',
-            'files.*.uploaded' => 'File gagal diunggah. Ukuran file maksimal 10 MB.',
+            ...AttachmentUploader::messages(),
         ]);
 
-        // Tautan YouTube: satu per baris
-        $links = collect(preg_split('/\R/', (string) ($data['links'] ?? '')))
-            ->map(fn ($l) => trim($l))
-            ->filter();
-
-        $invalid = $links->first(fn ($l) => Attachment::parseYoutubeId($l) === null);
-        if ($invalid !== null) {
-            throw ValidationException::withMessages(['links' => "Tautan bukan video YouTube: {$invalid}"]);
-        }
-
+        $links = AttachmentUploader::parseLinks($data['links'] ?? null);
         $files = $request->file('files', []);
 
         if (blank($data['description'] ?? null) && $files === [] && $links->isEmpty()) {
             throw ValidationException::withMessages(['description' => 'Isi keterangan, unggah file, atau tambahkan tautan YouTube.']);
         }
 
-        $stored = [];
-
         try {
-            $material = DB::transaction(function () use ($request, $classroom, $data, $files, $links, &$stored) {
-                $topicId = $data['topic_id'] ?? null;
-
-                if (filled($data['new_topic'] ?? null)) {
-                    $topicId = $classroom->topics()->create([
-                        'name' => $data['new_topic'],
-                        'position' => (int) $classroom->topics()->max('position') + 1,
-                    ])->id;
-                }
-
+            $material = DB::transaction(function () use ($request, $classroom, $data, $files, $links, $uploader) {
                 $material = $classroom->materials()->create([
-                    'topic_id' => $topicId,
+                    'topic_id' => $this->resolveTopicId($classroom, $data),
                     'author_id' => $request->user()->id,
                     'title' => $data['title'],
                     'description' => $data['description'] ?? null,
                 ]);
 
-                foreach ($files as $file) {
-                    $name = Str::uuid().'.'.strtolower($file->getClientOriginalExtension());
-                    $path = $file->storeAs("materi/{$classroom->id}", $name, 'local');
-                    $stored[] = $path;
-
-                    $material->attachments()->create([
-                        'type' => Attachment::TYPE_FILE,
-                        'path' => $path,
-                        'original_name' => $file->getClientOriginalName(),
-                        'mime_type' => $file->getMimeType(),
-                        'size' => $file->getSize(),
-                    ]);
-                }
-
-                foreach ($links as $url) {
-                    $material->attachments()->create(['type' => Attachment::TYPE_LINK, 'url' => $url]);
-                }
+                $uploader->store($material, $files, $links, "materi/{$classroom->id}");
 
                 return $material;
             });
         } catch (\Throwable $e) {
-            Storage::disk('local')->delete($stored);
+            $uploader->cleanup();
             throw $e;
         }
 
@@ -139,5 +93,18 @@ class MaterialController extends Controller
         $material->delete();
 
         return redirect()->route('kelas.show', $classroom)->with('status', "Materi {$material->title} dihapus.");
+    }
+
+    /** Pakai topik yang dipilih, atau buat topik baru kalau diketik. */
+    public static function resolveTopicId(Classroom $classroom, array $data): ?int
+    {
+        if (filled($data['new_topic'] ?? null)) {
+            return $classroom->topics()->create([
+                'name' => $data['new_topic'],
+                'position' => (int) $classroom->topics()->max('position') + 1,
+            ])->id;
+        }
+
+        return $data['topic_id'] ?? null;
     }
 }

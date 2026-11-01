@@ -22,4 +22,9 @@ class Topic extends Model
     {
         return $this->hasMany(Material::class)->latest();
     }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class)->latest();
+    }
 }

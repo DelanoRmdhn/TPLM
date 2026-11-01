@@ -1,5 +1,7 @@
-{{-- Daftar materi dalam satu topik — SEMENTARA dari BE --}}
+{{-- Daftar tugas + materi dalam satu topik — SEMENTARA dari BE --}}
 <ul class="mt-2 divide-y divide-border">
+    @include('kelas._tugas-list', ['assignments' => $assignments ?? collect()])
+
     @forelse ($materials as $material)
         <li>
             <a href="{{ route('kelas.materi.show', [$classroom, $material]) }}" class="flex min-h-12 items-center justify-between gap-2 py-3">
@@ -14,6 +16,8 @@
             </a>
         </li>
     @empty
-        <li class="py-3 text-caption text-text-muted">Belum ada materi di topik ini.</li>
+        @if (($assignments ?? collect())->isEmpty())
+            <li class="py-3 text-caption text-text-muted">Belum ada tugas atau materi di topik ini.</li>
+        @endif
     @endforelse
 </ul>

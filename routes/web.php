@@ -3,16 +3,21 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\RegistrationSettingController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ClassroomMemberController;
 use App\Http\Controllers\ClassroomPageController;
+use App\Http\Controllers\Guru\AssignmentController as GuruAssignmentController;
 use App\Http\Controllers\Guru\ClassroomController;
+use App\Http\Controllers\Guru\GradeController;
 use App\Http\Controllers\Guru\TopicController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\Siswa\BerandaController as SiswaBerandaController;
+use App\Http\Controllers\Siswa\SubmissionController;
+use App\Http\Controllers\SubmissionFileController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -64,6 +69,18 @@ Route::middleware('auth')->group(function () {
             Route::get('/kelas/{classroom}/materi/{material}', [MaterialController::class, 'show'])
                 ->whereNumber('material')->name('kelas.materi.show');
             Route::get('/lampiran/{attachment}', [AttachmentController::class, 'show'])->name('lampiran.show');
+
+            // M05 (siswa) / M06 (guru): buka tugas
+            Route::get('/kelas/{classroom}/tugas/{assignment}', [AssignmentController::class, 'show'])
+                ->whereNumber('assignment')->name('kelas.tugas.show');
+
+            // Foto/file pengumpulan (siswa pemilik & guru pengajar)
+            Route::get('/berkas-pengumpulan/{file}', [SubmissionFileController::class, 'show'])->name('pengumpulan.file');
+        });
+
+        // M05: siswa kumpul tugas
+        Route::middleware('role:siswa')->scopeBindings()->group(function () {
+            Route::post('/kelas/{classroom}/tugas/{assignment}/kumpul', [SubmissionController::class, 'store'])->name('kelas.tugas.kumpul');
         });
 
         // Kelola kelas: hanya guru pengajar
@@ -79,6 +96,17 @@ Route::middleware('auth')->group(function () {
             Route::get('/kelas/{classroom}/materi/buat', [MaterialController::class, 'create'])->name('kelas.materi.create');
             Route::post('/kelas/{classroom}/materi', [MaterialController::class, 'store'])->name('kelas.materi.store');
             Route::delete('/kelas/{classroom}/materi/{material}', [MaterialController::class, 'destroy'])->name('kelas.materi.destroy');
+
+            // M04: buat tugas
+            Route::get('/kelas/{classroom}/tugas/buat', [GuruAssignmentController::class, 'create'])->name('kelas.tugas.create');
+            Route::post('/kelas/{classroom}/tugas', [GuruAssignmentController::class, 'store'])->name('kelas.tugas.store');
+            Route::delete('/kelas/{classroom}/tugas/{assignment}', [GuruAssignmentController::class, 'destroy'])->name('kelas.tugas.destroy');
+        });
+
+        // M06: beri nilai (kepemilikan tugas & siswa dicek di GradeController)
+        Route::middleware('role:guru')->group(function () {
+            Route::get('/kelas/{classroom}/tugas/{assignment}/siswa/{student}', [GradeController::class, 'edit'])->name('kelas.tugas.nilai.edit');
+            Route::put('/kelas/{classroom}/tugas/{assignment}/siswa/{student}', [GradeController::class, 'update'])->name('kelas.tugas.nilai.update');
         });
 
         // Admin

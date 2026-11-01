@@ -72,5 +72,15 @@ class DatabaseSeeder extends Seeder
             'type' => Attachment::TYPE_LINK,
             'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         ]);
+
+        // Satu tugas contoh, tenggat 3 hari lagi
+        $kelas->assignments()->create([
+            'topic_id' => $topik->id,
+            'author_id' => $guru->id,
+            'title' => 'Latihan Pecahan Senilai',
+            'instructions' => 'Kerjakan soal di buku halaman 12 nomor 1–5, lalu foto hasilnya.',
+            'due_at' => now()->addDays(3)->setTime(23, 59),
+            'max_score' => 100,
+        ]);
     }
 }

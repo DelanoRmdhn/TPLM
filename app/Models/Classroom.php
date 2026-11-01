@@ -43,6 +43,11 @@ class Classroom extends Model
         return $this->hasMany(Material::class);
     }
 
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
     public function isTaughtBy(User $user): bool
     {
         return $this->teacher_id === $user->id;

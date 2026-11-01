@@ -43,7 +43,8 @@
                 </div>
             @endif
 
-            {{-- RINGKASAN PENILAIAN (masih data contoh, disambung di Hal 6–7) --}}
+            {{-- RINGKASAN PENILAIAN: pengumpulan yang belum dinilai --}}
+            @if ($ungradedCount > 0)
             <section class="rounded-2xl bg-blue-100 p-4">
 
                 <div class="flex items-center gap-2 text-brand">
@@ -58,15 +59,15 @@
                 </div>
 
                 <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-[32px] leading-none font-bold">24</span>
+                    <span class="text-[32px] leading-none font-bold">{{ $ungradedCount }}</span>
                     <span class="text-base font-semibold">tugas siswa</span>
                 </div>
 
                 <p class="mt-3 text-[15px] leading-[1.5] text-slate-700">
-                    Dari 2 kelas · paling lama dikirim 2 hari lalu
+                    Dari {{ $ungradedPerClass->count() }} kelas · paling lama dikirim {{ $oldestUngraded->submitted_at->diffForHumans() }}
                 </p>
 
-                <a href="#"
+                <a href="{{ route('kelas.tugas.nilai.edit', [$oldestUngraded->classroom_id, $oldestUngraded->assignment_id, $oldestUngraded->student_id]) }}"
                     class="mt-2.5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
                     <svg viewBox="0 0 24 24" class="size-5"
                         fill="none" stroke="currentColor" stroke-width="2"
@@ -77,6 +78,7 @@
                 </a>
 
             </section>
+            @endif
 
             {{-- BUAT KELAS --}}
             <a href="{{ route('guru.buat-kelas') }}"
@@ -115,6 +117,18 @@
                                 <p class="mt-1 text-sm text-slate-600">
                                     {{ $kelas->students_count }} siswa · {{ $kelas->academic_year }}
                                 </p>
+                                @if ($perlu = $ungradedPerClass->get($kelas->id))
+                                    <p class="mt-1 flex items-center gap-1.5 text-xs font-semibold text-orange-700">
+                                        <svg viewBox="0 0 24 24" class="size-4 shrink-0"
+                                            fill="none" stroke="currentColor" stroke-width="1.8"
+                                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <rect x="5" y="4" width="14" height="17" rx="2"/>
+                                            <path d="M9 4.5V3h6v1.5"/>
+                                            <path d="m9 12 2 2 4-4"/>
+                                        </svg>
+                                        {{ $perlu }} tugas perlu dinilai
+                                    </p>
+                                @endif
                             </div>
 
                             <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
