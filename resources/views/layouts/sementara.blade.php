@@ -19,10 +19,13 @@
                     <p class="truncate font-bold">@yield('title')</p>
                     <p class="truncate text-caption text-text-muted">{{ auth()->user()->name }} · {{ auth()->user()->role->label() }}</p>
                 </div>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="h-12 rounded-control border border-border px-4 font-semibold">Keluar</button>
-                </form>
+                <div class="flex shrink-0 gap-2">
+                    <a href="{{ route('akun') }}" class="flex h-12 items-center rounded-control border border-border px-4 font-semibold">Akun</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="h-12 rounded-control border border-border px-4 font-semibold">Keluar</button>
+                    </form>
+                </div>
             </div>
         </header>
     @endauth

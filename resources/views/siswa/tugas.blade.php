@@ -154,7 +154,7 @@
                 <span class="text-[11px] font-medium">Notifikasi</span>
             </a>
 
-            <a href="#"
+            <a href="{{ route('akun') }}"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"

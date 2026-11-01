@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\RegistrationSettingController;
@@ -44,6 +45,10 @@ Route::middleware('auth')->group(function () {
 
     // Semua halaman di bawah ini: kata sandi awal harus sudah diganti
     Route::middleware('password.changed')->group(function () {
+
+        // S14: akun saya & ganti kata sandi (semua peran)
+        Route::get('/akun', [AccountSettingsController::class, 'show'])->name('akun');
+        Route::put('/akun/kata-sandi', [AccountSettingsController::class, 'updatePassword'])->name('akun.password');
 
         // Siswa
         Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
