@@ -15,12 +15,21 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    Route::view('/siswa/beranda', 'siswa.beranda')->name('siswa.beranda');
-    Route::view('/siswa/tugas', 'siswa.tugas')->name('siswa.tugas');
+    // Siswa
+    Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
+        Route::view('/beranda', 'siswa.beranda')->name('beranda');
+        Route::view('/tugas', 'siswa.tugas')->name('tugas');
+    });
 
-    Route::view('/guru/beranda', 'guru.beranda')->name('guru.beranda');
-    Route::view('/guru/buat-kelas', 'guru.buat-kelas')->name('guru.buat-kelas');
+    // Guru
+    Route::middleware('role:guru')->prefix('guru')->name('guru.')->group(function () {
+        Route::view('/beranda', 'guru.beranda')->name('beranda');
+        Route::view('/buat-kelas', 'guru.buat-kelas')->name('buat-kelas');
+    });
 
-    // Sementara, sampai halaman admin (Hal 2) di-slicing
-    Route::get('/admin/beranda', fn () => 'Halaman admin belum dibuat.')->name('admin.beranda');
+    // Admin
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        // Sementara, sampai halaman admin (Hal 2) di-slicing
+        Route::get('/beranda', fn () => 'Halaman admin belum dibuat.')->name('beranda');
+    });
 });
