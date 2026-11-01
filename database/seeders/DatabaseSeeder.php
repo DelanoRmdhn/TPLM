@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Role;
+use App\Models\Classroom;
 use App\Models\Rombel;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -28,7 +29,7 @@ class DatabaseSeeder extends Seeder
             'role' => Role::Admin,
         ]);
 
-        User::factory()->create([
+        $guru = User::factory()->create([
             'name' => 'Guru Demo',
             'username' => '198701012010011001', // NIP
             'role' => Role::Guru,
@@ -49,5 +50,13 @@ class DatabaseSeeder extends Seeder
             'rombel_id' => $rombel4A->id,
             'must_change_password' => true,
         ]);
+
+        // Satu kelas contoh, berisi semua siswa rombel 4-A
+        $guru->teachingClassrooms()->create([
+            'name' => 'Matematika 4-A',
+            'subject' => 'Matematika',
+            'rombel_id' => $rombel4A->id,
+            'academic_year' => Classroom::academicYearOptions()[0],
+        ])->addRombel($rombel4A);
     }
 }

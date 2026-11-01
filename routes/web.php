@@ -6,6 +6,9 @@ use App\Http\Controllers\Admin\RegistrationSettingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ClassroomMemberController;
+use App\Http\Controllers\Guru\ClassroomController;
+use App\Http\Controllers\Siswa\BerandaController as SiswaBerandaController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -34,14 +37,23 @@ Route::middleware('auth')->group(function () {
 
         // Siswa
         Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
-            Route::view('/beranda', 'siswa.beranda')->name('beranda');
+            Route::get('/beranda', SiswaBerandaController::class)->name('beranda');
             Route::view('/tugas', 'siswa.tugas')->name('tugas');
         });
 
         // Guru
         Route::middleware('role:guru')->prefix('guru')->name('guru.')->group(function () {
-            Route::view('/beranda', 'guru.beranda')->name('beranda');
-            Route::view('/buat-kelas', 'guru.buat-kelas')->name('buat-kelas');
+            Route::get('/beranda', [ClassroomController::class, 'index'])->name('beranda');
+            Route::get('/buat-kelas', [ClassroomController::class, 'create'])->name('buat-kelas');
+            Route::post('/kelas', [ClassroomController::class, 'store'])->name('kelas.store');
+        });
+
+        // S13: anggota kelas (guru pengajar & siswa anggota, dicek di ClassroomPolicy)
+        Route::middleware('role:guru,siswa')->group(function () {
+            Route::get('/kelas/{classroom}/anggota', [ClassroomMemberController::class, 'index'])->name('kelas.anggota');
+        });
+        Route::middleware('role:guru')->group(function () {
+            Route::post('/kelas/{classroom}/anggota/rombel', [ClassroomMemberController::class, 'addRombel'])->name('kelas.anggota.rombel');
         });
 
         // Admin
