@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,9 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Yang sudah login lalu buka /login diarahkan ke berandanya
         $middleware->redirectUsersTo(fn (Request $request) => route($request->user()->homeRoute()));
 
-        // Cek peran: ->middleware('role:guru')
         $middleware->alias([
+            // Cek peran: ->middleware('role:guru')
             'role' => EnsureUserHasRole::class,
+            // Wajib ganti kata sandi awal dulu
+            'password.changed' => EnsurePasswordChanged::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

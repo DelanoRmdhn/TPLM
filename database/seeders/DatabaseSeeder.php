@@ -34,5 +34,13 @@ class DatabaseSeeder extends Seeder
             'username' => '0012345601', // NISN
             'role' => Role::Siswa,
         ]);
+
+        // Untuk coba alur "wajib ganti kata sandi" (M01c)
+        User::factory()->create([
+            'name' => 'Siswa Baru',
+            'username' => '0012345602', // NISN
+            'role' => Role::Siswa,
+            'must_change_password' => true,
+        ]);
     }
 }
