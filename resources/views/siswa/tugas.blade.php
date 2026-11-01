@@ -37,7 +37,7 @@
                     aria-controls="panel-belum"
                     class="rounded-full border border-brand bg-brand px-[18px] py-3 text-sm font-semibold text-white"
                 >
-                    Belum selesai ({{ $groups->flatten(1)->count() }})
+                    Belum selesai
                 </button>
 
                 <button
@@ -48,36 +48,129 @@
                     aria-controls="panel-sudah"
                     class="rounded-full border border-slate-300 bg-white px-[18px] py-3 text-sm font-semibold text-slate-900"
                 >
-                    Sudah selesai ({{ $done->count() }})
+                    Sudah selesai
                 </button>
 
             </div>
 
-            {{-- TUGAS BELUM SELESAI: urut tenggat terdekat, lewat tenggat ditandai (PB-17) --}}
+            {{-- TUGAS BELUM SELESAI --}}
             <div id="panel-belum" role="tabpanel" aria-labelledby="tab-belum"
                 class="mt-4 space-y-4">
 
-                @forelse ($groups as $group => $rows)
-                    <section>
-                        <h2 class="mb-4 text-sm font-semibold {{ $group === 'Lewat tenggat' ? 'text-red-600' : 'text-slate-600' }}">
-                            {{ $group }}
-                        </h2>
+                {{-- BE SOK --}}
+                <section>
+                    <h2 class="mb-4 text-sm font-semibold text-slate-600">
+                        Besok
+                    </h2>
 
-                        <div class="space-y-3">
-                            @foreach ($rows as $row)
-                                @include('siswa._kartu-tugas', ['row' => $row])
-                            @endforeach
+                    <article class="flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4">
+
+                        <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                            <svg viewBox="0 0 24 24" class="size-6"
+                                fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <rect x="5" y="4" width="14" height="17" rx="2"/>
+                                <path d="M9 4.5V3h6v1.5"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
                         </div>
-                    </section>
-                @empty
-                    <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                        Hore, semua tugas sudah dikerjakan! 🎉
-                    </p>
-                @endforelse
+
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-[15px] leading-5 font-bold">
+                                Latihan Pecahan Senilai
+                            </h3>
+
+                            <p class="mt-2 text-sm leading-5 text-slate-600">
+                                Matematika · Besok, 12.00 WIB
+                            </p>
+
+                            <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                <span class="size-2 rounded-full bg-amber-700"></span>
+                                Belum dikerjakan
+                            </span>
+                        </div>
+
+                    </article>
+                </section>
+
+                {{-- MINGGU INI --}}
+                <section>
+                    <h2 class="mb-4 text-sm font-semibold text-slate-600">
+                        Minggu ini
+                    </h2>
+
+                    <article class="flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4">
+
+                        <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                            <svg viewBox="0 0 24 24" class="size-6"
+                                fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <rect x="5" y="4" width="14" height="17" rx="2"/>
+                                <path d="M9 4.5V3h6v1.5"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-[15px] leading-5 font-bold">
+                                Gambar Bagian Daun
+                            </h3>
+
+                            <p class="mt-2 text-sm leading-5 text-slate-600">
+                                IPA · Kamis, 23 Okt, 23.59 WIB
+                            </p>
+
+                            <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                <span class="size-2 rounded-full bg-amber-700"></span>
+                                Belum dikerjakan
+                            </span>
+                        </div>
+
+                    </article>
+                </section>
+
+                {{-- LEWAT TENGGAT --}}
+                <section>
+                    <h2 class="mb-4 text-sm font-semibold text-red-600">
+                        Lewat tenggat
+                    </h2>
+
+                    <article class="flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4">
+
+                        <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
+                            <svg viewBox="0 0 24 24" class="size-6"
+                                fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <path d="M12 7v14"/>
+                                <path d="M12 7C9 4 5 4 3 5v14c3-1 6-1 9 2"/>
+                                <path d="M12 7c3-3 7-3 9-2v14c-3-1-6-1-9 2"/>
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-[15px] leading-5 font-bold">
+                                Membaca Cerita Rakyat
+                            </h3>
+
+                            <p class="mt-2 text-sm leading-5 text-slate-600">
+                                Bahasa Indonesia · lewat 2 hari
+                            </p>
+
+                            <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                <span class="size-2 rounded-full bg-red-700"></span>
+                                Terlambat
+                            </span>
+                        </div>
+
+                    </article>
+                </section>
 
             </div>
 
-            {{-- TUGAS SUDAH SELESAI: diserahkan & dinilai (PB-13) --}}
+            {{-- TUGAS SUDAH SELESAI --}}
             <div id="panel-sudah" role="tabpanel" aria-labelledby="tab-sudah"
                 class="mt-4 hidden space-y-4">
 
@@ -86,15 +179,32 @@
                         Sudah dikumpulkan
                     </h2>
 
-                    <div class="space-y-3">
-                        @forelse ($done as $row)
-                            @include('siswa._kartu-tugas', ['row' => $row])
-                        @empty
-                            <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                                Belum ada tugas yang dikumpulkan.
+                    <article class="flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4">
+                        <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-700">
+                            <svg viewBox="0 0 24 24" class="size-6"
+                                fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <rect x="5" y="4" width="14" height="17" rx="2"/>
+                                <path d="M9 4.5V3h6v1.5"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-[15px] leading-5 font-bold">
+                                Contoh Tugas Selesai
+                            </h3>
+
+                            <p class="mt-2 text-sm text-slate-600">
+                                Matematika · Sudah dikumpulkan
                             </p>
-                        @endforelse
-                    </div>
+
+                            <span class="mt-2 inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                Selesai
+                            </span>
+                        </div>
+                    </article>
                 </section>
 
             </div>
@@ -133,7 +243,7 @@
                 <span class="text-[11px] font-medium">Tugas</span>
             </a>
 
-            <a href="{{ route('siswa.nilai') }}"
+            <a href="#"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"
@@ -154,7 +264,7 @@
                 <span class="text-[11px] font-medium">Notifikasi</span>
             </a>
 
-            <a href="{{ route('akun') }}"
+            <a href="#"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"

@@ -28,10 +28,10 @@
 
             <div class="min-w-0">
                 <h1 class="text-[18px] leading-tight font-bold">
-                    Halo, {{ auth()->user()->name }}!
+                    Halo, Ahmad!
                 </h1>
                 <p class="mt-1 text-sm text-slate-600">
-                    Siswa{{ auth()->user()->rombel ? ' · Kelas '.auth()->user()->rombel->name : '' }}
+                    Siswa · Kelas 4-A
                 </p>
             </div>
         </header>
@@ -39,7 +39,6 @@
         <main class="space-y-3.5 px-[18px] py-5">
 
             {{-- TENGGAT TERDEKAT --}}
-            @if ($nearest)
             <section class="rounded-2xl bg-amber-100 p-4">
                 <div class="flex items-center gap-2 text-amber-700">
                     <svg viewBox="0 0 24 24" class="size-5 shrink-0"
@@ -52,14 +51,14 @@
                 </div>
 
                 <h2 class="mt-2 text-[17px] leading-snug font-bold">
-                    {{ $nearest->assignment->title }}
+                    Latihan Pecahan Senilai
                 </h2>
 
                 <p class="mt-2 text-sm leading-5 text-slate-700">
-                    {{ $nearest->assignment->classroom->subject }} · {{ $nearest->dueLabel }}
+                    Matematika · Besok, 18 Okt, 12.00 WIB
                 </p>
 
-                <a href="{{ route('kelas.tugas.show', [$nearest->assignment->classroom_id, $nearest->assignment]) }}"
+                <a href="#"
                     class="mt-2.5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
                     <svg viewBox="0 0 24 24" class="size-5"
                         fill="none" stroke="currentColor" stroke-width="2"
@@ -69,9 +68,8 @@
                     Kerjakan Sekarang
                 </a>
             </section>
-            @endif
 
-            {{-- BELUM DIKERJAKAN (maks 3, urut tenggat terdekat) --}}
+            {{-- BELUM DIKERJAKAN --}}
             <section>
                 <div class="flex items-center justify-between gap-2 py-1">
                     <h2 class="text-[17px] font-bold">
@@ -84,15 +82,32 @@
                     </a>
                 </div>
 
-                <div class="mt-3 space-y-3">
-                    @forelse ($pending as $row)
-                        @include('siswa._kartu-tugas', ['row' => $row])
-                    @empty
-                        <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                            Tidak ada tugas yang belum dikerjakan. 🎉
+                <article class="mt-3 flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4">
+                    <div class="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                        <svg viewBox="0 0 24 24" class="size-6"
+                            fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="5" y="4" width="14" height="17" rx="2"/>
+                            <path d="M9 4.5V3h6v1.5"/>
+                            <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-[15px] leading-5 font-bold">
+                            Gambar Bagian Daun
+                        </h3>
+
+                        <p class="mt-1 text-sm text-slate-600">
+                            IPA · Kamis, 20 Okt, 23.59 WIB
                         </p>
-                    @endforelse
-                </div>
+
+                        <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                            <span class="size-2 rounded-full bg-amber-600"></span>
+                            Belum dikerjakan
+                        </span>
+                    </div>
+                </article>
             </section>
 
             {{-- KELAS SAYA --}}
@@ -103,44 +118,72 @@
 
                 <div class="mt-3 space-y-3">
 
-                    @php($warna = ['bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-amber-100 text-amber-700'])
+                    {{-- KELAS MATEMATIKA --}}
+                    <a href="#"
+                        class="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-300">
+                        <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                            <svg viewBox="0 0 24 24" class="size-6"
+                                fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 7v14"/>
+                                <path d="M12 7C9 4 5 4 3 5v14c3-1 6-1 9 2"/>
+                                <path d="M12 7c3-3 7-3 9-2v14c-3-1-6-1-9 2"/>
+                            </svg>
+                        </div>
 
-                    @forelse ($classrooms as $kelas)
-                        <a href="{{ route('kelas.show', $kelas) }}"
-                            class="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-300">
-                            <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl {{ $warna[$loop->index % 3] }}">
-                                <svg viewBox="0 0 24 24" class="size-6"
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-bold">Matematika 4-A</h3>
+                            <p class="mt-1 text-sm text-slate-600">
+                                Ibu Siti Rahma, S.Pd
+                            </p>
+                            <p class="mt-1 flex items-center gap-1.5 text-xs font-semibold text-orange-700">
+                                <svg viewBox="0 0 24 24" class="size-4 shrink-0"
                                     fill="none" stroke="currentColor" stroke-width="1.8"
                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M12 7v14"/>
-                                    <path d="M12 7C9 4 5 4 3 5v14c3-1 6-1 9 2"/>
-                                    <path d="M12 7c3-3 7-3 9-2v14c-3-1-6-1-9 2"/>
+                                    <rect x="5" y="4" width="14" height="17" rx="2"/>
+                                    <path d="M9 4.5V3h6v1.5"/>
+                                    <path d="m9 12 2 2 4-4"/>
                                 </svg>
-                            </div>
+                                1 tugas belum dikerjakan
+                            </p>
+                        </div>
 
-                            <div class="min-w-0 flex-1">
-                                <h3 class="font-bold">{{ $kelas->name }}</h3>
-                                <p class="mt-1 text-sm text-slate-600">
-                                    {{ $kelas->subject }} · {{ $kelas->teacher->name }}
-                                </p>
-                                @if ($belum = $pendingPerClass->get($kelas->id))
-                                    <p class="mt-1 text-xs font-semibold text-orange-700">
-                                        {{ $belum }} tugas belum dikerjakan
-                                    </p>
-                                @endif
-                            </div>
+                        <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
+                            fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                    </a>
 
-                            <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
-                                fill="none" stroke="currentColor" stroke-width="2"
+                    {{-- KELAS IPA --}}
+                    <a href="#"
+                        class="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-300">
+                        <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-700">
+                            <svg viewBox="0 0 24 24" class="size-6"
+                                fill="none" stroke="currentColor" stroke-width="1.8"
                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="m9 18 6-6-6-6"/>
+                                <path d="M12 7v14"/>
+                                <path d="M12 7C9 4 5 4 3 5v14c3-1 6-1 9 2"/>
+                                <path d="M12 7c3-3 7-3 9-2v14c-3-1-6-1-9 2"/>
                             </svg>
-                        </a>
-                    @empty
-                        <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                            Kamu belum masuk kelas apa pun. Tunggu guru memasukkan rombelmu.
-                        </p>
-                    @endforelse
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-bold">IPA 4-A</h3>
+                            <p class="mt-1 text-sm text-slate-600">
+                                Pak Joko Anwar, S.Pd
+                            </p>
+                            <p class="mt-1 text-xs font-semibold text-orange-700">
+                                2 tugas belum dikerjakan
+                            </p>
+                        </div>
+
+                        <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
+                            fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                    </a>
 
                 </div>
             </section>
@@ -179,7 +222,7 @@
                 <span class="text-[11px] font-medium">Tugas</span>
             </a>
 
-            <a href="{{ route('siswa.nilai') }}"
+            <a href="#"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"
@@ -200,7 +243,7 @@
                 <span class="text-[11px] font-medium">Notifikasi</span>
             </a>
 
-            <a href="{{ route('akun') }}"
+            <a href="#"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"

@@ -45,14 +45,8 @@
             {{-- FORM KELAS --}}
             <section class="rounded-2xl border border-slate-200 bg-white p-5">
 
-                <form id="form-kelas" action="{{ route('guru.kelas.store') }}" method="POST" class="space-y-4">
+                <form action="#" method="POST" class="space-y-4">
                     @csrf
-
-                    @if ($errors->any())
-                        <div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {{ $errors->first() }}
-                        </div>
-                    @endif
 
                     {{-- Nama Kelas --}}
                     <div>
@@ -65,8 +59,8 @@
                             type="text"
                             id="nama_kelas"
                             name="nama_kelas"
-                            value="{{ old('nama_kelas') }}"
-                            placeholder="Contoh: Matematika 4-A"
+                            value="Matematika 4-A"
+                            placeholder="Masukkan nama kelas"
                             required
                             class="h-[50px] w-full rounded-xl border border-slate-300 px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                         >
@@ -86,10 +80,10 @@
                                 required
                                 class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                             >
-                                <option value="Matematika" @selected(old('mata_pelajaran') === 'Matematika')>Matematika</option>
-                                <option value="IPA" @selected(old('mata_pelajaran') === 'IPA')>IPA</option>
-                                <option value="Bahasa Indonesia" @selected(old('mata_pelajaran') === 'Bahasa Indonesia')>Bahasa Indonesia</option>
-                                <option value="Pendidikan Pancasila" @selected(old('mata_pelajaran') === 'Pendidikan Pancasila')>Pendidikan Pancasila</option>
+                                <option value="Matematika">Matematika</option>
+                                <option value="IPA">IPA</option>
+                                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                                <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
                             </select>
 
                             <svg viewBox="0 0 24 24"
@@ -116,16 +110,9 @@
                                 required
                                 class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                             >
-                                @forelse ($rombels as $rombel)
-                                    <option value="{{ $rombel->id }}"
-                                        data-name="{{ $rombel->name }}"
-                                        data-count="{{ $rombel->students_count }}"
-                                        @selected(old('rombel') == $rombel->id)>
-                                        {{ $rombel->name }} · {{ $rombel->students_count }} siswa
-                                    </option>
-                                @empty
-                                    <option value="" disabled selected>Belum ada rombel, minta admin impor data siswa</option>
-                                @endforelse
+                                <option value="4-A">4-A · 30 siswa</option>
+                                <option value="4-B">4-B · 28 siswa</option>
+                                <option value="4-C">4-C · 29 siswa</option>
                             </select>
 
                             <svg viewBox="0 0 24 24"
@@ -152,9 +139,8 @@
                                 required
                                 class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                             >
-                                @foreach ($academicYears as $year)
-                                    <option value="{{ $year }}" @selected(old('tahun_ajaran') === $year)>{{ $year }}</option>
-                                @endforeach
+                                <option value="2026/2027">2026/2027</option>
+                                <option value="2027/2028">2027/2028</option>
                             </select>
 
                             <svg viewBox="0 0 24 24"
@@ -186,8 +172,8 @@
                 </svg>
 
                 <p class="text-sm leading-[1.6]">
-                    Semua <span id="jumlah-siswa">0</span> siswa rombel
-                    <span id="nama-rombel">-</span> otomatis masuk ke kelas ini.
+                    Semua <span id="jumlah-siswa">30</span> siswa rombel
+                    <span id="nama-rombel">4-A</span> otomatis masuk ke kelas ini.
                     Tidak perlu menambah satu per satu.
                 </p>
 
@@ -195,8 +181,8 @@
 
             {{-- TOMBOL BUAT KELAS --}}
             <button
-                type="submit"
-                form="form-kelas"
+                type="button"
+                onclick="alert('Tampilan sudah siap. Form ini belum terhubung ke penyimpanan kelas.')"
                 class="flex h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-brand text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
                 <svg viewBox="0 0 24 24" class="size-5"
@@ -223,16 +209,18 @@
         const jumlahSiswa = document.getElementById('jumlah-siswa');
         const namaRombel = document.getElementById('nama-rombel');
 
-        // Jumlah siswa diambil dari data-count tiap pilihan rombel
-        const tampilkanRombel = () => {
-            const pilihan = rombel.selectedOptions[0];
-
-            jumlahSiswa.textContent = pilihan?.dataset.count ?? 0;
-            namaRombel.textContent = pilihan?.dataset.name ?? '-';
+        const jumlahSiswaPerRombel = {
+            '4-A': 30,
+            '4-B': 28,
+            '4-C': 29,
         };
 
-        rombel.addEventListener('change', tampilkanRombel);
-        tampilkanRombel();
+        rombel.addEventListener('change', () => {
+            const kelas = rombel.value;
+
+            jumlahSiswa.textContent = jumlahSiswaPerRombel[kelas];
+            namaRombel.textContent = kelas;
+        });
     </script>
 
 </body>

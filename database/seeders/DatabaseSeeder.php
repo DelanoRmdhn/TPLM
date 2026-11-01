@@ -2,85 +2,24 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Role;
-use App\Models\Attachment;
-use App\Models\Classroom;
-use App\Models\Rombel;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-/**
- * Akun demo untuk development. JANGAN dijalankan di server.
- * Semua kata sandi: "password".
- */
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
-        $rombel4A = Rombel::findOrCreateByName('4-A');
-        Rombel::findOrCreateByName('4-B');
-        Rombel::findOrCreateByName('4-C');
+        // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Admin',
-            'username' => 'admin',
-            'role' => Role::Admin,
-        ]);
-
-        $guru = User::factory()->create([
-            'name' => 'Guru Demo',
-            'username' => '198701012010011001', // NIP
-            'role' => Role::Guru,
-        ]);
-
-        User::factory()->create([
-            'name' => 'Siswa Demo',
-            'username' => '0012345601', // NISN
-            'role' => Role::Siswa,
-            'rombel_id' => $rombel4A->id,
-        ]);
-
-        // Untuk coba alur "wajib ganti kata sandi" (M01c)
-        User::factory()->create([
-            'name' => 'Siswa Baru',
-            'username' => '0012345602', // NISN
-            'role' => Role::Siswa,
-            'rombel_id' => $rombel4A->id,
-            'must_change_password' => true,
-        ]);
-
-        // Satu kelas contoh, berisi semua siswa rombel 4-A
-        $kelas = $guru->teachingClassrooms()->create([
-            'name' => 'Matematika 4-A',
-            'subject' => 'Matematika',
-            'rombel_id' => $rombel4A->id,
-            'academic_year' => Classroom::academicYearOptions()[0],
-        ]);
-        $kelas->addRombel($rombel4A);
-
-        // Satu topik + materi contoh (tautan YouTube)
-        $topik = $kelas->topics()->create(['name' => 'Bab 1: Pecahan', 'position' => 1]);
-        $kelas->materials()->create([
-            'topic_id' => $topik->id,
-            'author_id' => $guru->id,
-            'title' => 'Mengenal Pecahan',
-            'description' => 'Tonton videonya, lalu coba jelaskan apa itu pecahan dengan kata-katamu sendiri.',
-        ])->attachments()->create([
-            'type' => Attachment::TYPE_LINK,
-            'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        ]);
-
-        // Satu tugas contoh, tenggat 3 hari lagi
-        $kelas->assignments()->create([
-            'topic_id' => $topik->id,
-            'author_id' => $guru->id,
-            'title' => 'Latihan Pecahan Senilai',
-            'instructions' => 'Kerjakan soal di buku halaman 12 nomor 1–5, lalu foto hasilnya.',
-            'due_at' => now()->addDays(3)->setTime(23, 59),
-            'max_score' => 100,
+            'name' => 'Test User',
+            'email' => 'test@example.com',
         ]);
     }
 }

@@ -48,22 +48,8 @@
         {{-- Login Form --}}
         <section class="rounded-card border border-border bg-white p-3">
 
-            <form action="{{ route('login.store') }}" method="POST" class="space-y-3">
+            <form action="#" method="POST" class="space-y-3">
                 @csrf
-
-                {{-- Info, mis. "Pendaftaran akun sedang ditutup." --}}
-                @if (session('status'))
-                    <div role="status" class="rounded-control border border-blue-200 bg-blue-50 px-2.5 py-2 text-[10px] leading-[1.4] text-blue-800">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
-                {{-- M01b: pesan login gagal --}}
-                @if ($errors->any())
-                    <div role="alert" class="rounded-control border border-red-200 bg-red-50 px-2.5 py-2 text-[10px] leading-[1.4] text-red-700">
-                        {{ $errors->first() }}
-                    </div>
-                @endif
 
                 {{-- NISN / Username --}}
                 <div>
@@ -79,7 +65,6 @@
                         name="username"
                         type="text"
                         autocomplete="username"
-                        value="{{ old('username') }}"
                         placeholder="Contoh: 0123984101"
                         required
                         class="h-8 w-full rounded-control border border-border bg-white px-2.5 text-[10px] outline-none placeholder:text-slate-500 focus:border-brand focus:ring-1 focus:ring-brand"
@@ -140,8 +125,7 @@
 
         </section>
 
-        {{-- Register: hanya tampil saat pendaftaran dibuka (PB-30, M01f) --}}
-        @if ($registrationOpen)
+        {{-- Register --}}
         <div class="mt-4 text-center">
 
             <p class="text-[10px] leading-[1.4] text-text-muted">
@@ -149,7 +133,7 @@
             </p>
 
             <a
-                href="{{ route('register') }}"
+                href="#"
                 class="mt-1.5 flex h-8 w-full items-center justify-center gap-1.5 rounded-control border border-brand bg-white text-[11px] font-semibold text-brand transition hover:bg-blue-50"
             >
                 <svg
@@ -167,7 +151,6 @@
             </a>
 
         </div>
-        @endif
 
         {{-- Help Information --}}
         <aside class="mt-3 flex items-start gap-2 rounded-card bg-blue-100 px-2.5 py-2.5 text-[10px] leading-[1.5] text-text">
