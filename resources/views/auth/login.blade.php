@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -49,6 +50,13 @@
 
             <form action="{{ route('login.store') }}" method="POST" class="space-y-3">
                 @csrf
+
+                {{-- Info, mis. "Pendaftaran akun sedang ditutup." --}}
+                @if (session('status'))
+                    <div role="status" class="rounded-control border border-blue-200 bg-blue-50 px-2.5 py-2 text-[10px] leading-[1.4] text-blue-800">
+                        {{ session('status') }}
+                    </div>
+                @endif
 
                 {{-- M01b: pesan login gagal --}}
                 @if ($errors->any())
@@ -132,7 +140,8 @@
 
         </section>
 
-        {{-- Register --}}
+        {{-- Register: hanya tampil saat pendaftaran dibuka (PB-30, M01f) --}}
+        @if ($registrationOpen)
         <div class="mt-4 text-center">
 
             <p class="text-[10px] leading-[1.4] text-text-muted">
@@ -140,7 +149,7 @@
             </p>
 
             <a
-                href="#"
+                href="{{ route('register') }}"
                 class="mt-1.5 flex h-8 w-full items-center justify-center gap-1.5 rounded-control border border-brand bg-white text-[11px] font-semibold text-brand transition hover:bg-blue-50"
             >
                 <svg
@@ -158,6 +167,7 @@
             </a>
 
         </div>
+        @endif
 
         {{-- Help Information --}}
         <aside class="mt-3 flex items-start gap-2 rounded-card bg-blue-100 px-2.5 py-2.5 text-[10px] leading-[1.5] text-text">

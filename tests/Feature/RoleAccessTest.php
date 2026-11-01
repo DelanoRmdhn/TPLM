@@ -26,7 +26,7 @@ class RoleAccessTest extends TestCase
 
         $this->actingAs($siswa)->get('/guru/beranda')->assertForbidden();
         $this->actingAs($siswa)->get('/guru/buat-kelas')->assertForbidden();
-        $this->actingAs($siswa)->get('/admin/beranda')->assertForbidden();
+        $this->actingAs($siswa)->get('/admin/akun')->assertForbidden();
     }
 
     public function test_guru_hanya_bisa_buka_halaman_guru(): void
@@ -37,14 +37,15 @@ class RoleAccessTest extends TestCase
         $this->actingAs($guru)->get('/guru/buat-kelas')->assertOk();
 
         $this->actingAs($guru)->get('/siswa/beranda')->assertForbidden();
-        $this->actingAs($guru)->get('/admin/beranda')->assertForbidden();
+        $this->actingAs($guru)->get('/admin/akun')->assertForbidden();
     }
 
     public function test_admin_hanya_bisa_buka_halaman_admin(): void
     {
         $admin = User::factory()->create(['role' => Role::Admin]);
 
-        $this->actingAs($admin)->get('/admin/beranda')->assertOk();
+        $this->actingAs($admin)->get('/admin/beranda')->assertRedirect('/admin/akun');
+        $this->actingAs($admin)->get('/admin/akun')->assertOk();
 
         $this->actingAs($admin)->get('/siswa/beranda')->assertForbidden();
         $this->actingAs($admin)->get('/guru/beranda')->assertForbidden();

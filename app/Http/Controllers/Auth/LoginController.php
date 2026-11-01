@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\RegistrationSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +14,10 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    /** M01: halaman login. */
+    /** M01: halaman login. Tombol Daftar hanya muncul saat pendaftaran dibuka (PB-30, M01f). */
     public function show(): View
     {
-        return view('auth.login');
+        return view('auth.login', ['registrationOpen' => RegistrationSetting::isOpen()]);
     }
 
     /** FR-01: masuk dengan NISN/username + kata sandi. */

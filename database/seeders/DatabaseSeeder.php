@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Role;
+use App\Models\Rombel;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -17,6 +18,10 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        $rombel4A = Rombel::findOrCreateByName('4-A');
+        Rombel::findOrCreateByName('4-B');
+        Rombel::findOrCreateByName('4-C');
+
         User::factory()->create([
             'name' => 'Admin',
             'username' => 'admin',
@@ -33,6 +38,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Siswa Demo',
             'username' => '0012345601', // NISN
             'role' => Role::Siswa,
+            'rombel_id' => $rombel4A->id,
         ]);
 
         // Untuk coba alur "wajib ganti kata sandi" (M01c)
@@ -40,6 +46,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Siswa Baru',
             'username' => '0012345602', // NISN
             'role' => Role::Siswa,
+            'rombel_id' => $rombel4A->id,
             'must_change_password' => true,
         ]);
     }
