@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -44,5 +45,15 @@ class User extends Authenticatable
     public function isSiswa(): bool
     {
         return $this->role === Role::Siswa;
+    }
+
+    /** Nama route beranda sesuai peran, dipakai setelah login. */
+    public function homeRoute(): string
+    {
+        return match ($this->role) {
+            Role::Admin => 'admin.beranda',
+            Role::Guru => 'guru.beranda',
+            Role::Siswa => 'siswa.beranda',
+        };
     }
 }

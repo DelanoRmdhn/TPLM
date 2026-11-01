@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -48,8 +47,15 @@
         {{-- Login Form --}}
         <section class="rounded-card border border-border bg-white p-3">
 
-            <form action="#" method="POST" class="space-y-3">
+            <form action="{{ route('login.store') }}" method="POST" class="space-y-3">
                 @csrf
+
+                {{-- M01b: pesan login gagal --}}
+                @if ($errors->any())
+                    <div role="alert" class="rounded-control border border-red-200 bg-red-50 px-2.5 py-2 text-[10px] leading-[1.4] text-red-700">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
 
                 {{-- NISN / Username --}}
                 <div>
@@ -65,6 +71,7 @@
                         name="username"
                         type="text"
                         autocomplete="username"
+                        value="{{ old('username') }}"
                         placeholder="Contoh: 0123984101"
                         required
                         class="h-8 w-full rounded-control border border-border bg-white px-2.5 text-[10px] outline-none placeholder:text-slate-500 focus:border-brand focus:ring-1 focus:ring-brand"
