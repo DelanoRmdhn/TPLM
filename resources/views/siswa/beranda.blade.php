@@ -38,7 +38,8 @@
 
         <main class="space-y-3.5 px-[18px] py-5">
 
-            {{-- TENGGAT TERDEKAT (masih data contoh, disambung di Hal 5 & 8) --}}
+            {{-- TENGGAT TERDEKAT --}}
+            @if ($nearest)
             <section class="rounded-2xl bg-amber-100 p-4">
                 <div class="flex items-center gap-2 text-amber-700">
                     <svg viewBox="0 0 24 24" class="size-5 shrink-0"
@@ -51,14 +52,14 @@
                 </div>
 
                 <h2 class="mt-2 text-[17px] leading-snug font-bold">
-                    Latihan Pecahan Senilai
+                    {{ $nearest->assignment->title }}
                 </h2>
 
                 <p class="mt-2 text-sm leading-5 text-slate-700">
-                    Matematika · Besok, 18 Okt, 12.00 WIB
+                    {{ $nearest->assignment->classroom->subject }} · {{ $nearest->dueLabel }}
                 </p>
 
-                <a href="#"
+                <a href="{{ route('kelas.tugas.show', [$nearest->assignment->classroom_id, $nearest->assignment]) }}"
                     class="mt-2.5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
                     <svg viewBox="0 0 24 24" class="size-5"
                         fill="none" stroke="currentColor" stroke-width="2"
@@ -68,8 +69,9 @@
                     Kerjakan Sekarang
                 </a>
             </section>
+            @endif
 
-            {{-- BELUM DIKERJAKAN (masih data contoh, disambung di Hal 8) --}}
+            {{-- BELUM DIKERJAKAN (maks 3, urut tenggat terdekat) --}}
             <section>
                 <div class="flex items-center justify-between gap-2 py-1">
                     <h2 class="text-[17px] font-bold">
@@ -82,32 +84,15 @@
                     </a>
                 </div>
 
-                <article class="mt-3 flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4">
-                    <div class="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-                        <svg viewBox="0 0 24 24" class="size-6"
-                            fill="none" stroke="currentColor" stroke-width="1.8"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <rect x="5" y="4" width="14" height="17" rx="2"/>
-                            <path d="M9 4.5V3h6v1.5"/>
-                            <path d="m9 12 2 2 4-4"/>
-                        </svg>
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                        <h3 class="text-[15px] leading-5 font-bold">
-                            Gambar Bagian Daun
-                        </h3>
-
-                        <p class="mt-1 text-sm text-slate-600">
-                            IPA · Kamis, 20 Okt, 23.59 WIB
+                <div class="mt-3 space-y-3">
+                    @forelse ($pending as $row)
+                        @include('siswa._kartu-tugas', ['row' => $row])
+                    @empty
+                        <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+                            Tidak ada tugas yang belum dikerjakan. 🎉
                         </p>
-
-                        <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-                            <span class="size-2 rounded-full bg-amber-600"></span>
-                            Belum dikerjakan
-                        </span>
-                    </div>
-                </article>
+                    @endforelse
+                </div>
             </section>
 
             {{-- KELAS SAYA --}}
@@ -138,6 +123,11 @@
                                 <p class="mt-1 text-sm text-slate-600">
                                     {{ $kelas->subject }} · {{ $kelas->teacher->name }}
                                 </p>
+                                @if ($belum = $pendingPerClass->get($kelas->id))
+                                    <p class="mt-1 text-xs font-semibold text-orange-700">
+                                        {{ $belum }} tugas belum dikerjakan
+                                    </p>
+                                @endif
                             </div>
 
                             <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
@@ -189,7 +179,7 @@
                 <span class="text-[11px] font-medium">Tugas</span>
             </a>
 
-            <a href="#"
+            <a href="{{ route('siswa.nilai') }}"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"

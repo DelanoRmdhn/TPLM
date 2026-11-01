@@ -17,6 +17,7 @@ use App\Http\Controllers\Guru\TopicController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\Siswa\BerandaController as SiswaBerandaController;
 use App\Http\Controllers\Siswa\SubmissionController;
+use App\Http\Controllers\Siswa\TaskController;
 use App\Http\Controllers\SubmissionFileController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,7 +48,8 @@ Route::middleware('auth')->group(function () {
         // Siswa
         Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
             Route::get('/beranda', SiswaBerandaController::class)->name('beranda');
-            Route::view('/tugas', 'siswa.tugas')->name('tugas');
+            Route::get('/tugas', [TaskController::class, 'index'])->name('tugas');
+            Route::get('/nilai', [TaskController::class, 'grades'])->name('nilai');
         });
 
         // Guru
