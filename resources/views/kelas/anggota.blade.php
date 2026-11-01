@@ -5,7 +5,7 @@
 
 @section('content')
 
-    <a href="{{ route(auth()->user()->homeRoute()) }}" class="inline-flex h-12 items-center text-brand underline">← Kembali ke beranda</a>
+    <a href="{{ route('kelas.show', $classroom) }}" class="inline-flex h-12 items-center text-brand underline">← Kembali ke kelas</a>
 
     <section class="rounded-card border border-border bg-white p-4">
         <p class="text-caption text-text-muted">{{ $classroom->subject }} · {{ $classroom->academic_year }}</p>

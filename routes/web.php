@@ -3,11 +3,15 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\RegistrationSettingController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ClassroomMemberController;
+use App\Http\Controllers\ClassroomPageController;
 use App\Http\Controllers\Guru\ClassroomController;
+use App\Http\Controllers\Guru\TopicController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\Siswa\BerandaController as SiswaBerandaController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,12 +52,33 @@ Route::middleware('auth')->group(function () {
             Route::post('/kelas', [ClassroomController::class, 'store'])->name('kelas.store');
         });
 
-        // S13: anggota kelas (guru pengajar & siswa anggota, dicek di ClassroomPolicy)
-        Route::middleware('role:guru,siswa')->group(function () {
+        // Kelas: guru pengajar & siswa anggota (dicek di ClassroomPolicy)
+        Route::middleware('role:guru,siswa')->scopeBindings()->group(function () {
+            // M03a/M03b: halaman kelas
+            Route::get('/kelas/{classroom}', [ClassroomPageController::class, 'show'])->name('kelas.show');
+
+            // S13: anggota kelas
             Route::get('/kelas/{classroom}/anggota', [ClassroomMemberController::class, 'index'])->name('kelas.anggota');
+
+            // M03c/M03c2: buka materi & file
+            Route::get('/kelas/{classroom}/materi/{material}', [MaterialController::class, 'show'])
+                ->whereNumber('material')->name('kelas.materi.show');
+            Route::get('/lampiran/{attachment}', [AttachmentController::class, 'show'])->name('lampiran.show');
         });
-        Route::middleware('role:guru')->group(function () {
+
+        // Kelola kelas: hanya guru pengajar
+        Route::middleware('role:guru')->scopeBindings()->group(function () {
             Route::post('/kelas/{classroom}/anggota/rombel', [ClassroomMemberController::class, 'addRombel'])->name('kelas.anggota.rombel');
+
+            // PB-09: topik
+            Route::post('/kelas/{classroom}/topik', [TopicController::class, 'store'])->name('kelas.topik.store');
+            Route::post('/kelas/{classroom}/topik/{topic}/{direction}', [TopicController::class, 'move'])
+                ->whereIn('direction', ['naik', 'turun'])->name('kelas.topik.move');
+
+            // M04b: buat materi
+            Route::get('/kelas/{classroom}/materi/buat', [MaterialController::class, 'create'])->name('kelas.materi.create');
+            Route::post('/kelas/{classroom}/materi', [MaterialController::class, 'store'])->name('kelas.materi.store');
+            Route::delete('/kelas/{classroom}/materi/{material}', [MaterialController::class, 'destroy'])->name('kelas.materi.destroy');
         });
 
         // Admin

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Material;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Nama tetap untuk kolom attachable_type, supaya data tidak rusak kalau class dipindah.
+        Relation::enforceMorphMap([
+            'material' => Material::class,
+        ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Role;
+use App\Models\Attachment;
 use App\Models\Classroom;
 use App\Models\Rombel;
 use App\Models\User;
@@ -52,11 +53,24 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Satu kelas contoh, berisi semua siswa rombel 4-A
-        $guru->teachingClassrooms()->create([
+        $kelas = $guru->teachingClassrooms()->create([
             'name' => 'Matematika 4-A',
             'subject' => 'Matematika',
             'rombel_id' => $rombel4A->id,
             'academic_year' => Classroom::academicYearOptions()[0],
-        ])->addRombel($rombel4A);
+        ]);
+        $kelas->addRombel($rombel4A);
+
+        // Satu topik + materi contoh (tautan YouTube)
+        $topik = $kelas->topics()->create(['name' => 'Bab 1: Pecahan', 'position' => 1]);
+        $kelas->materials()->create([
+            'topic_id' => $topik->id,
+            'author_id' => $guru->id,
+            'title' => 'Mengenal Pecahan',
+            'description' => 'Tonton videonya, lalu coba jelaskan apa itu pecahan dengan kata-katamu sendiri.',
+        ])->attachments()->create([
+            'type' => Attachment::TYPE_LINK,
+            'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        ]);
     }
 }

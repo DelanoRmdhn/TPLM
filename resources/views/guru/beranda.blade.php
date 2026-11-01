@@ -98,8 +98,7 @@
                     @php($warna = ['bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-amber-100 text-amber-700'])
 
                     @forelse ($classrooms as $kelas)
-                        {{-- Sementara ke halaman anggota, nanti ke halaman kelas (Hal 4) --}}
-                        <a href="{{ route('kelas.anggota', $kelas) }}"
+                        <a href="{{ route('kelas.show', $kelas) }}"
                             class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-300">
                             <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl {{ $warna[$loop->index % 3] }}">
                                 <svg viewBox="0 0 24 24" class="size-6"
