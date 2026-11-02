@@ -80,6 +80,17 @@ class AccountImporter
             }
         }
 
+        // Rombel harus ada di daftar rombel (dikelola admin)
+        if ($type === 'siswa') {
+            $rombels = Rombel::pluck('name')->all();
+            foreach ($valid as $rowNumber => $parsed) {
+                if (! in_array($parsed['rombel'], $rombels, true)) {
+                    $problems[] = ['row' => $rowNumber, 'message' => "Rombel {$parsed['rombel']} tidak ada di daftar. Tambahkan dulu di menu Rombel."];
+                    unset($valid[$rowNumber]);
+                }
+            }
+        }
+
         // Sudah terdaftar di database
         foreach ($this->alreadyRegistered($valid) as $rowNumber => $username) {
             $problems[] = ['row' => $rowNumber, 'message' => "{$label} {$username} sudah terdaftar."];
@@ -109,23 +120,30 @@ class AccountImporter
             unset($valid[$rowNumber]);
         }
 
+        // Rombel bisa saja dihapus admin di antara cek dan Simpan
+        $rombels = $type === 'siswa' ? Rombel::pluck('id', 'name')->all() : [];
+        foreach ($valid as $rowNumber => $parsed) {
+            if ($type === 'siswa' && ! isset($rombels[$parsed['rombel']])) {
+                $problems[] = ['row' => $rowNumber, 'message' => "Rombel {$parsed['rombel']} tidak ada di daftar. Tambahkan dulu di menu Rombel."];
+                unset($valid[$rowNumber]);
+            }
+        }
+
         // Hash dengan cost lebih ringan supaya impor ratusan akun tidak kelamaan;
         // aman karena kata sandi awal wajib diganti saat login pertama.
         @set_time_limit(300);
         $rounds = min(10, (int) config('hashing.bcrypt.rounds', 12));
 
-        $created = DB::transaction(function () use ($valid, $type, $rounds) {
+        $created = DB::transaction(function () use ($valid, $type, $rounds, $rombels) {
             $created = [];
 
             foreach ($valid as $parsed) {
                 $password = TemporaryPassword::generate();
-                $rombel = $type === 'siswa' ? Rombel::findOrCreateByName($parsed['rombel']) : null;
-
                 User::create([
                     'name' => $parsed['name'],
                     'username' => $parsed['username'],
                     'role' => $type === 'siswa' ? Role::Siswa : Role::Guru,
-                    'rombel_id' => $rombel?->id,
+                    'rombel_id' => $type === 'siswa' ? $rombels[$parsed['rombel']] : null,
                     'is_active' => true,
                     'must_change_password' => true,
                     'password' => Hash::make($password, ['rounds' => $rounds]),
@@ -134,7 +152,7 @@ class AccountImporter
                 $created[] = [
                     'name' => $parsed['name'],
                     'username' => $parsed['username'],
-                    'rombel' => $rombel?->name ?? '',
+                    'rombel' => $parsed['rombel'],
                     'password' => $password,
                 ];
             }
@@ -198,7 +216,7 @@ class AccountImporter
             return 'Rombel kosong.';
         }
 
-        return ['name' => $name, 'username' => $nisn, 'rombel' => strtoupper($rombel)];
+        return ['name' => $name, 'username' => $nisn, 'rombel' => Rombel::normalizeName($rombel)];
     }
 
     /** @return array{name: string, username: string, rombel: string}|string */

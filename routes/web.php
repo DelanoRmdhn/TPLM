@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\RegistrationSettingController;
+use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AttachmentController;
@@ -152,6 +153,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/mapel', [SubjectController::class, 'store'])->name('mapel.store');
             Route::put('/mapel/{subject}', [SubjectController::class, 'update'])->name('mapel.update');
             Route::delete('/mapel/{subject}', [SubjectController::class, 'destroy'])->name('mapel.destroy');
+
+            // Daftar rombel (dikelola admin, isi awal 1A–6B)
+            Route::get('/rombel', [RombelController::class, 'index'])->name('rombel.index');
+            Route::post('/rombel', [RombelController::class, 'store'])->name('rombel.store');
+            Route::put('/rombel/{rombel}', [RombelController::class, 'update'])->name('rombel.update');
+            Route::delete('/rombel/{rombel}', [RombelController::class, 'destroy'])->name('rombel.destroy');
         });
     });
 });

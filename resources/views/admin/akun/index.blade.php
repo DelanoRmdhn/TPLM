@@ -39,7 +39,8 @@
     <div class="grid grid-cols-2 gap-3">
         <a href="{{ route('admin.akun.create') }}" class="flex h-12 items-center justify-center rounded-control bg-brand font-semibold text-white">+ Tambah Akun</a>
         <a href="{{ route('admin.impor.index') }}" class="flex h-12 items-center justify-center rounded-control border border-brand font-semibold text-brand">Impor Excel</a>
-        <a href="{{ route('admin.mapel.index') }}" class="col-span-2 flex h-12 items-center justify-center rounded-control border border-border font-semibold">Mata Pelajaran</a>
+        <a href="{{ route('admin.rombel.index') }}" class="flex h-12 items-center justify-center rounded-control border border-border font-semibold">Rombel</a>
+        <a href="{{ route('admin.mapel.index') }}" class="flex h-12 items-center justify-center rounded-control border border-border font-semibold">Mata Pelajaran</a>
     </div>
 
     {{-- Filter --}}

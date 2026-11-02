@@ -34,7 +34,7 @@ class AssignmentTest extends TestCase
         $this->withoutVite();
         Storage::fake('local');
 
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
         $this->guru = User::factory()->create(['role' => Role::Guru]);
         $this->ani = User::factory()->create(['role' => Role::Siswa, 'name' => 'Ani', 'rombel_id' => $rombel->id]);
         $this->budi = User::factory()->create(['role' => Role::Siswa, 'name' => 'Budi', 'rombel_id' => $rombel->id]);

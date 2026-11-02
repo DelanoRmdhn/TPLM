@@ -40,15 +40,14 @@
 
         <div>
             <label for="rombel" class="mb-1 block font-semibold">Rombel (khusus siswa)</label>
-            <input id="rombel" name="rombel" list="daftar-rombel" placeholder="Contoh: 4-A"
-                value="{{ old('rombel', $user->rombel?->name) }}"
-                class="h-12 w-full rounded-control border border-border px-3">
-            <datalist id="daftar-rombel">
+            @php($selectedRombel = old('rombel', $user->rombel?->name))
+            <select id="rombel" name="rombel" class="h-12 w-full rounded-control border border-border px-3">
+                <option value="">Pilih rombel</option>
                 @foreach ($rombels as $rombel)
-                    <option value="{{ $rombel->name }}">
+                    <option value="{{ $rombel->name }}" @selected($selectedRombel === $rombel->name)>{{ $rombel->name }}</option>
                 @endforeach
-            </datalist>
-            <p class="mt-1 text-caption text-text-muted">Rombel baru otomatis dibuat kalau belum ada.</p>
+            </select>
+            <p class="mt-1 text-caption text-text-muted">Rombel belum ada? Tambahkan dulu di menu Rombel.</p>
         </div>
 
         @unless ($user->exists)

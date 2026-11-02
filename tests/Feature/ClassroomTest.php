@@ -23,7 +23,7 @@ class ClassroomTest extends TestCase
         $this->withoutVite();
 
         $this->guru = User::factory()->create(['name' => 'Bu Siti', 'role' => Role::Guru]);
-        $this->rombel = Rombel::findOrCreateByName('4-A');
+        $this->rombel = Rombel::findOrCreateByName('4A');
     }
 
     private function siswa(?Rombel $rombel = null, array $attrs = []): User
@@ -44,7 +44,7 @@ class ClassroomTest extends TestCase
 
         $this->actingAs($this->guru)->get('/guru/buat-kelas')
             ->assertOk()
-            ->assertSee('4-A · 2 siswa')
+            ->assertSee('4A · 2 siswa')
             ->assertSee(Classroom::academicYearOptions()[0]);
     }
 
@@ -53,10 +53,10 @@ class ClassroomTest extends TestCase
         $ani = $this->siswa();
         $budi = $this->siswa();
         $nonaktif = $this->siswa(attrs: ['is_active' => false]);
-        $lain = $this->siswa(Rombel::findOrCreateByName('4-B'));
+        $lain = $this->siswa(Rombel::findOrCreateByName('4B'));
 
         $this->actingAs($this->guru)->post('/guru/kelas', [
-            'nama_kelas' => 'Matematika 4-A',
+            'nama_kelas' => 'Matematika 4A',
             'mata_pelajaran' => 'Matematika',
             'rombel' => $this->rombel->id,
             'tahun_ajaran' => Classroom::academicYearOptions()[0],
@@ -71,8 +71,8 @@ class ClassroomTest extends TestCase
 
         // Langsung muncul di beranda guru (PB-06)
         $this->actingAs($this->guru)->get('/guru/beranda')
-            ->assertSee('Kelas Matematika 4-A dibuat. 2 siswa rombel 4-A sudah masuk.')
-            ->assertSee('Matematika 4-A')
+            ->assertSee('Kelas Matematika 4A dibuat. 2 siswa rombel 4A sudah masuk.')
+            ->assertSee('Matematika 4A')
             ->assertSee('2 siswa');
     }
 
@@ -95,7 +95,7 @@ class ClassroomTest extends TestCase
         Classroom::factory()->create(['teacher_id' => $guruLain->id, 'name' => 'IPA Punya Orang']);
 
         $this->actingAs($this->guru)->get('/guru/beranda')
-            ->assertSee('Matematika 4-A')
+            ->assertSee('Matematika 4A')
             ->assertDontSee('IPA Punya Orang');
     }
 
@@ -110,9 +110,9 @@ class ClassroomTest extends TestCase
 
         $this->actingAs($ani)->get('/siswa/beranda')
             ->assertOk()
-            ->assertSee('Matematika 4-A')
+            ->assertSee('Matematika 4A')
             ->assertSee('Bu Siti')
-            ->assertSee('Kelas 4-A')
+            ->assertSee('Kelas 4A')
             ->assertDontSee('IPA Punya Orang');
     }
 
@@ -134,7 +134,7 @@ class ClassroomTest extends TestCase
     {
         $kelas = $this->kelas();
         $guruLain = User::factory()->create(['role' => Role::Guru]);
-        $siswaLuar = $this->siswa(Rombel::findOrCreateByName('4-B'));
+        $siswaLuar = $this->siswa(Rombel::findOrCreateByName('4B'));
         $admin = User::factory()->create(['role' => Role::Admin]);
 
         $this->actingAs($guruLain)->get("/kelas/{$kelas->id}/anggota")->assertForbidden();
@@ -148,21 +148,21 @@ class ClassroomTest extends TestCase
         $kelas->addRombel($this->rombel);
         $this->siswa();
 
-        $rombelB = Rombel::findOrCreateByName('4-B');
+        $rombelB = Rombel::findOrCreateByName('4B');
         $this->siswa($rombelB);
         $this->siswa($rombelB);
 
         $this->actingAs($this->guru)
             ->post("/kelas/{$kelas->id}/anggota/rombel", ['rombel' => $rombelB->id])
-            ->assertSessionHas('status', '2 siswa rombel 4-B ditambahkan.');
+            ->assertSessionHas('status', '2 siswa rombel 4B ditambahkan.');
 
         $this->actingAs($this->guru)
             ->post("/kelas/{$kelas->id}/anggota/rombel", ['rombel' => $rombelB->id])
-            ->assertSessionHas('status', 'Semua siswa rombel 4-B sudah ada di kelas ini.');
+            ->assertSessionHas('status', 'Semua siswa rombel 4B sudah ada di kelas ini.');
 
         $this->assertSame(2, $kelas->students()->count());
 
-        // Siswa 4-A yang baru diimpor ikut masuk saat rombel 4-A ditambah lagi
+        // Siswa 4A yang baru diimpor ikut masuk saat rombel 4A ditambah lagi
         $this->actingAs($this->guru)->post("/kelas/{$kelas->id}/anggota/rombel", ['rombel' => $this->rombel->id]);
         $this->assertSame(3, $kelas->students()->count());
     }

@@ -43,9 +43,9 @@ class RegistrationTest extends TestCase
     public function test_siswa_daftar_dan_akun_langsung_aktif(): void
     {
         $this->open();
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
 
-        $this->get('/daftar')->assertOk()->assertSee('4-A');
+        $this->get('/daftar')->assertOk()->assertSee('4A');
 
         $this->post('/daftar', [
             'role' => 'siswa',
@@ -121,7 +121,7 @@ class RegistrationTest extends TestCase
     public function test_nisn_yang_sudah_terdaftar_ditolak(): void
     {
         $this->open();
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
         User::factory()->create(['username' => '0012345601']);
 
         $this->post('/daftar', [

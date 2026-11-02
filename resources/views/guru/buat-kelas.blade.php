@@ -66,7 +66,7 @@
                             id="nama_kelas"
                             name="nama_kelas"
                             value="{{ old('nama_kelas') }}"
-                            placeholder="Contoh: Matematika 4-A"
+                            placeholder="Contoh: Matematika 4A"
                             required
                             class="h-[50px] w-full rounded-xl border border-slate-300 px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                         >

@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -167,11 +168,16 @@ class AccountController extends Controller
             'rombel.required' => 'Rombel wajib diisi untuk siswa.',
         ]);
 
+        $rombel = $isSiswa ? Rombel::findByName($data['rombel']) : null;
+        if ($isSiswa && $rombel === null) {
+            throw ValidationException::withMessages(['rombel' => 'Rombel tidak ada di daftar. Tambahkan dulu di menu Rombel.']);
+        }
+
         return [
             'role' => $data['role'],
             'name' => $data['name'],
             'username' => $data['username'],
-            'rombel_id' => $isSiswa ? Rombel::findOrCreateByName($data['rombel'])->id : null,
+            'rombel_id' => $rombel?->id,
         ];
     }
 }

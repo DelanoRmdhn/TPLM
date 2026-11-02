@@ -29,7 +29,7 @@ class MaterialTest extends TestCase
         $this->withoutVite();
         Storage::fake('local');
 
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
         $this->guru = User::factory()->create(['role' => Role::Guru]);
         $this->siswa = User::factory()->create(['role' => Role::Siswa, 'rombel_id' => $rombel->id]);
         $this->kelas = Classroom::factory()->create(['teacher_id' => $this->guru->id, 'rombel_id' => $rombel->id]);

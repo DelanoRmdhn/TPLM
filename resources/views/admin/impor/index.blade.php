@@ -13,7 +13,7 @@
             <a href="{{ route('admin.impor.template', 'guru') }}" class="flex h-12 items-center justify-center rounded-control border border-brand font-semibold text-brand">Template Guru</a>
         </div>
         <ul class="mt-3 list-inside list-disc text-caption text-text-muted">
-            <li>Siswa: Nama, NISN (10 digit), Rombel (mis. 4A)</li>
+            <li>Siswa: Nama, NISN (10 digit), Rombel (mis. 4A, harus ada di menu Rombel)</li>
             <li>Guru: Nama, NIP atau Username</li>
         </ul>
     </section>
