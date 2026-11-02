@@ -150,70 +150,7 @@
     </div>
 
     {{-- BOTTOM NAVIGATION --}}
-    <nav aria-label="Navigasi utama"
-        class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white">
-        <div class="mx-auto grid h-[66px] w-full max-w-[390px] grid-cols-5 px-1">
-
-            <a href="#" aria-current="page"
-                class="flex flex-col items-center justify-center gap-0.5 text-brand">
-                <span class="flex h-8 w-12 items-center justify-center rounded-full bg-blue-100">
-                    <svg viewBox="0 0 24 24" class="size-6"
-                        fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m3 10 9-7 9 7"/>
-                        <path d="M5 9v11h14V9"/>
-                        <path d="M9 20v-7h6v7"/>
-                    </svg>
-                </span>
-                <span class="text-[11px] font-semibold">Beranda</span>
-            </a>
-
-            <a href="#"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="5" y="4" width="14" height="17" rx="2"/>
-                    <path d="M9 4.5V3h6v1.5"/>
-                    <path d="m9 12 2 2 4-4"/>
-                </svg>
-                <span class="text-[11px] font-medium">Penilaian</span>
-            </a>
-
-            <a href="#"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M4 20V10M10 20V4M16 20v-7M22 20V8"/>
-                </svg>
-                <span class="text-[11px] font-medium">Rekap</span>
-            </a>
-
-            <a href="#"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                    <path d="M10 21h4"/>
-                </svg>
-                <span class="text-[11px] font-medium">Notifikasi</span>
-            </a>
-
-            <a href="{{ route('akun') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
-                </svg>
-                <span class="text-[11px] font-medium">Akun</span>
-            </a>
-
-        </div>
-    </nav>
+<x-bottom-navigation active="beranda" />
 
 </body>
 </html>
