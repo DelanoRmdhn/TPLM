@@ -86,10 +86,11 @@
                                 required
                                 class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                             >
-                                <option value="Matematika" @selected(old('mata_pelajaran') === 'Matematika')>Matematika</option>
-                                <option value="IPA" @selected(old('mata_pelajaran') === 'IPA')>IPA</option>
-                                <option value="Bahasa Indonesia" @selected(old('mata_pelajaran') === 'Bahasa Indonesia')>Bahasa Indonesia</option>
-                                <option value="Pendidikan Pancasila" @selected(old('mata_pelajaran') === 'Pendidikan Pancasila')>Pendidikan Pancasila</option>
+                                @forelse ($subjects as $subject)
+                                    <option value="{{ $subject }}" @selected(old('mata_pelajaran') === $subject)>{{ $subject }}</option>
+                                @empty
+                                    <option value="" disabled selected>Belum ada mata pelajaran. Hubungi admin.</option>
+                                @endforelse
                             </select>
 
                             <svg viewBox="0 0 24 24"
