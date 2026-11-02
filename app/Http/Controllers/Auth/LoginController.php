@@ -58,7 +58,7 @@ class LoginController extends Controller
             $this->logout($request);
 
             throw ValidationException::withMessages([
-                'username' => 'Akun ini sudah dinonaktifkan. Hubungi operator sekolah.',
+                'username' => 'Akun kamu tidak aktif. Hubungi admin sekolah.',
             ]);
         }
 

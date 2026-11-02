@@ -80,7 +80,42 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'rahasia123',
         ])->assertRedirect('/daftar/berhasil');
 
-        $this->assertSame(Role::Guru, User::where('username', '198501012010011002')->first()->role);
+        $guru = User::where('username', '198501012010011002')->first();
+        $this->assertSame(Role::Guru, $guru->role);
+        $this->assertNull($guru->rombel_id);
+    }
+
+    public function test_guru_daftar_menunggu_persetujuan_admin(): void
+    {
+        $this->open();
+
+        $this->post('/daftar', [
+            'role' => 'guru',
+            'name' => 'Pak Joko',
+            'username' => 'pakjoko',
+            'password' => 'rahasia123',
+            'password_confirmation' => 'rahasia123',
+        ])->assertRedirect('/daftar/berhasil');
+
+        $guru = User::where('username', 'pakjoko')->first();
+        $this->assertFalse($guru->is_active);
+
+        $this->get('/daftar/berhasil')
+            ->assertSee('Akun kamu menunggu persetujuan admin sekolah.')
+            ->assertDontSee('Akun kamu sudah aktif.');
+
+        // Belum bisa login sebelum diaktifkan admin
+        $this->post('/login', ['username' => 'pakjoko', 'password' => 'rahasia123'])
+            ->assertSessionHasErrors(['username' => 'Akun kamu tidak aktif. Hubungi admin sekolah.']);
+        $this->assertGuest();
+
+        // Admin mengaktifkan di Kelola akun, lalu bisa login
+        $admin = User::factory()->create(['username' => 'admin', 'role' => Role::Admin]);
+        $this->actingAs($admin)->post("/admin/akun/{$guru->id}/aktifkan");
+        auth()->logout();
+
+        $this->post('/login', ['username' => 'pakjoko', 'password' => 'rahasia123'])
+            ->assertRedirect('/guru/beranda');
     }
 
     public function test_nisn_yang_sudah_terdaftar_ditolak(): void

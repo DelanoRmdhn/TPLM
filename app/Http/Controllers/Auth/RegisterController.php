@@ -63,13 +63,14 @@ class RegisterController extends Controller
             'password.confirmed' => 'Ulangi kata sandi tidak sama.',
         ]);
 
-        // Akun langsung aktif (PB-30)
+        // Siswa langsung aktif (PB-30). Guru menunggu diaktifkan admin di Kelola akun,
+        // supaya siswa tidak bisa iseng mendaftar sebagai guru.
         $user = User::create([
             'name' => $data['name'],
             'username' => $data['username'],
             'role' => $data['role'],
             'rombel_id' => $isSiswa ? $data['rombel_id'] : null,
-            'is_active' => true,
+            'is_active' => $isSiswa,
             'must_change_password' => false,
             'password' => $data['password'],
         ]);
@@ -77,6 +78,7 @@ class RegisterController extends Controller
         return redirect()->route('register.success')->with('registered', [
             'name' => $user->name,
             'username' => $user->username,
+            'pending' => ! $user->is_active,
         ]);
     }
 
