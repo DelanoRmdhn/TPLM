@@ -149,70 +149,128 @@
     </div>
 
     {{-- BOTTOM NAVIGATION --}}
-    <nav aria-label="Navigasi utama"
-        class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white">
-        <div class="mx-auto grid h-[66px] w-full max-w-[390px] grid-cols-5 px-1">
+<{{-- BOTTOM NAVIGATION --}}
+<nav
+    aria-label="Navigasi utama"
+    class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white">
 
-            <a href="#" aria-current="page"
-                class="flex flex-col items-center justify-center gap-0.5 text-brand">
-                <span class="flex h-8 w-12 items-center justify-center rounded-full bg-blue-100">
-                    <svg viewBox="0 0 24 24" class="size-6"
-                        fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m3 10 9-7 9 7"/>
-                        <path d="M5 9v11h14V9"/>
-                        <path d="M9 20v-7h6v7"/>
-                    </svg>
-                </span>
-                <span class="text-[11px] font-semibold">Beranda</span>
-            </a>
+    <div class="mx-auto grid h-[69px] w-full max-w-[390px] grid-cols-5 px-1">
 
-            <a href="{{ route('siswa.tugas') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="5" y="4" width="14" height="17" rx="2"/>
-                    <path d="M9 4.5V3h6v1.5"/>
-                    <path d="m9 12 2 2 4-4"/>
+        {{-- BERANDA AKTIF --}}
+        <a
+            href="{{ route('siswa.beranda') }}"
+            aria-current="page"
+            class="flex flex-col items-center justify-center gap-0.5 text-blue-600">
+
+            <span class="flex h-8 w-14 items-center justify-center rounded-full bg-blue-100">
+                <svg
+                    viewBox="0 0 24 24"
+                    class="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+
+                    <path d="m3 10 9-7 9 7"/>
+                    <path d="M5 9v11h14V9"/>
+                    <path d="M9 20v-7h6v7"/>
+
                 </svg>
-                <span class="text-[11px] font-medium">Tugas</span>
-            </a>
+            </span>
 
-            <a href="{{ route('siswa.nilai') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
-                </svg>
-                <span class="text-[11px] font-medium">Nilai</span>
-            </a>
+            <span class="text-sm font-semibold">Beranda</span>
+        </a>
 
-            <a href="#"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                    <path d="M10 21h4"/>
-                </svg>
-                <span class="text-[11px] font-medium">Notifikasi</span>
-            </a>
+        {{-- TUGAS --}}
+        <a
+            href="{{ route('siswa.tugas') }}"
+            class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
 
-            <a href="{{ route('akun') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
-                </svg>
-                <span class="text-[11px] font-medium">Akun</span>
-            </a>
+            <svg
+                viewBox="0 0 24 24"
+                class="size-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round">
 
-        </div>
-    </nav>
+                <rect x="5" y="4" width="14" height="17" rx="2"/>
+                <path d="M9 4.5V3h6v1.5"/>
+                <path d="m9 12 2 2 4-4"/>
 
+            </svg>
+
+            <span class="text-sm font-medium">Tugas</span>
+        </a>
+
+        {{-- NILAI --}}
+        <a
+            href="{{ route('siswa.nilai') }}"
+            class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
+
+            <svg
+                viewBox="0 0 24 24"
+                class="size-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+
+            </svg>
+
+            <span class="text-sm font-medium">Nilai</span>
+        </a>
+
+        {{-- NOTIFIKASI --}}
+        <a
+            href="#"
+            class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
+
+            <svg
+                viewBox="0 0 24 24"
+                class="size-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                <path d="M10 21h4"/>
+
+            </svg>
+
+            <span class="text-sm font-medium">Notifikasi</span>
+        </a>
+
+        {{-- AKUN --}}
+        <a
+            href="{{ route('akun') }}"
+            class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
+
+            <svg
+                viewBox="0 0 24 24"
+                class="size-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
+
+            </svg>
+
+            <span class="text-sm font-medium">Akun</span>
+        </a>
+
+    </div>
+</nav>
 </body>
 </html>
