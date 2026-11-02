@@ -86,8 +86,14 @@ class AssignmentTest extends TestCase
         ])->assertSessionHasErrors([
             'title',
             'due_at' => 'Tenggat harus setelah waktu sekarang.',
-            'max_score' => 'Nilai maksimal minimal 1.',
+            'max_score' => 'Nilai maksimal harus angka 1 sampai 100.',
         ]);
+
+        foreach ([101, 'abc'] as $bad) {
+            $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/tugas", [
+                'title' => 'Tugas', 'due_at' => now()->addDay()->format('Y-m-d\TH:i'), 'max_score' => $bad,
+            ])->assertSessionHasErrors(['max_score' => 'Nilai maksimal harus angka 1 sampai 100.']);
+        }
 
         $this->assertSame(0, Assignment::count());
     }

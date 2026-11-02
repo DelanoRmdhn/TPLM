@@ -40,7 +40,7 @@
             </div>
             <div>
                 <label for="max_score" class="mb-1 block font-semibold">Nilai maksimal</label>
-                <input id="max_score" name="max_score" type="number" min="1" max="1000" required inputmode="numeric"
+                <input id="max_score" name="max_score" type="number" min="1" max="100" required inputmode="numeric"
                     value="{{ old('max_score', $assignment->max_score ?? 100) }}" class="h-12 w-full rounded-control border border-border px-3">
             </div>
         </div>

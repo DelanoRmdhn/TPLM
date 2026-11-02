@@ -144,7 +144,7 @@ class AssignmentController extends Controller
             'topic_id' => ['nullable', Rule::exists('topics', 'id')->where('classroom_id', $classroom->id)],
             'new_topic' => ['nullable', 'string', 'max:100'],
             'due_at' => ['required', 'date_format:Y-m-d\TH:i', ...($dueUnchanged ? [] : ['after:now'])],
-            'max_score' => ['required', 'integer', 'min:'.max(1, $highestScore), 'max:1000'],
+            'max_score' => ['required', 'integer', 'min:'.max(1, $highestScore), 'max:100'],
             ...AttachmentUploader::rules(),
             ...($assignment ? AttachmentUploader::removalRules() : []),
         ], [
@@ -154,10 +154,11 @@ class AssignmentController extends Controller
             'due_at.date_format' => 'Format tenggat tidak valid.',
             'due_at.after' => 'Tenggat harus setelah waktu sekarang.',
             'max_score.required' => 'Nilai maksimal wajib diisi.',
+            'max_score.integer' => 'Nilai maksimal harus angka 1 sampai 100.',
             'max_score.min' => $highestScore > 1
                 ? "Nilai maksimal tidak boleh di bawah nilai yang sudah diberikan ({$highestScore})."
-                : 'Nilai maksimal minimal 1.',
-            'max_score.max' => 'Nilai maksimal paling besar 1000.',
+                : 'Nilai maksimal harus angka 1 sampai 100.',
+            'max_score.max' => 'Nilai maksimal harus angka 1 sampai 100.',
             ...AttachmentUploader::messages(),
         ]);
     }
