@@ -7,6 +7,7 @@ use App\Models\RegistrationSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -14,6 +15,11 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
+    /** Cookie penanda pengguna pernah masuk di browser ini; dihapus saat menekan Keluar. */
+    public const SESSION_COOKIE = 'pernah_masuk';
+
+    public const SESSION_EXPIRED = 'Sesi kamu sudah berakhir. Silakan masuk lagi.';
+
     /** M01: halaman login. Tombol Daftar hanya muncul saat pendaftaran dibuka (PB-30, M01f). */
     public function show(): View
     {
@@ -64,6 +70,9 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Penanda "pernah masuk" untuk pesan "Sesi kamu sudah berakhir" (lihat bootstrap/app.php)
+        Cookie::queue(self::SESSION_COOKIE, '1', 60 * 24 * 30);
+
         return redirect()->intended(route($request->user()->homeRoute()));
     }
 
@@ -71,6 +80,9 @@ class LoginController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $this->logout($request);
+
+        // Keluar sendiri, jadi tidak perlu pesan sesi berakhir
+        Cookie::queue(Cookie::forget(self::SESSION_COOKIE));
 
         return redirect()->route('login');
     }

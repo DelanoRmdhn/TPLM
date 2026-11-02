@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\User;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -91,6 +93,42 @@ class LoginTest extends TestCase
         $this->actingAs($user)->post('/logout')->assertRedirect(route('login'));
 
         $this->assertGuest();
+    }
+
+    public function test_sesi_habis_muncul_pesan_di_login(): void
+    {
+        User::factory()->create(['username' => '0012345601', 'password' => 'password']);
+
+        $this->post('/login', ['username' => '0012345601', 'password' => 'password'])
+            ->assertCookie('pernah_masuk');
+
+        // Sesi di server habis (2 jam tidak aktif), tapi browser masih punya penanda
+        auth()->logout();
+        $this->flushSession();
+
+        $this->withCookie('pernah_masuk', '1')->get('/siswa/beranda')
+            ->assertRedirect(route('login'))
+            ->assertCookieExpired('pernah_masuk');
+
+        $this->get('/login')->assertSee('Sesi kamu sudah berakhir. Silakan masuk lagi.');
+    }
+
+    public function test_keluar_sendiri_atau_belum_pernah_masuk_tanpa_pesan_sesi(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/logout')->assertCookieExpired('pernah_masuk');
+
+        $this->get('/siswa/beranda')->assertRedirect(route('login'));
+        $this->get('/login')->assertDontSee('Sesi kamu sudah berakhir');
+    }
+
+    public function test_form_dikirim_setelah_sesi_habis_kembali_ke_login(): void
+    {
+        Route::post('/_uji-419', fn () => throw new TokenMismatchException)->middleware('web');
+
+        $this->post('/_uji-419')->assertRedirect(route('login'));
+        $this->get('/login')->assertSee('Sesi kamu sudah berakhir. Silakan masuk lagi.');
     }
 
     public function test_beranda_harus_login(): void
