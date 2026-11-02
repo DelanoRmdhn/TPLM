@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 
+// Pratinjau hasil slicing Figma (hanya local)
+require __DIR__.'/slicing.php';
+
 // Hanya untuk yang belum login
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
