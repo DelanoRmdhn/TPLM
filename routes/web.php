@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\RegistrationSettingController;
+use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\LoginController;
@@ -139,6 +140,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/impor', [ImportController::class, 'store'])->name('impor.store');
             Route::get('/impor/hasil', [ImportController::class, 'result'])->name('impor.hasil');
             Route::get('/impor/unduh', [ImportController::class, 'download'])->name('impor.unduh');
+
+            // Daftar mata pelajaran (dikelola admin, dipakai form buat kelas)
+            Route::get('/mapel', [SubjectController::class, 'index'])->name('mapel.index');
+            Route::post('/mapel', [SubjectController::class, 'store'])->name('mapel.store');
+            Route::put('/mapel/{subject}', [SubjectController::class, 'update'])->name('mapel.update');
+            Route::delete('/mapel/{subject}', [SubjectController::class, 'destroy'])->name('mapel.destroy');
         });
     });
 });

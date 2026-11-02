@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
 use App\Models\Rombel;
+use App\Models\Subject;
 use App\Models\Submission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ class ClassroomController extends Controller
                 ->orderBy('name')
                 ->get(),
             'academicYears' => Classroom::academicYearOptions(),
+            'subjects' => Subject::names(),
         ]);
     }
 
@@ -62,12 +64,13 @@ class ClassroomController extends Controller
     {
         $data = $request->validate([
             'nama_kelas' => ['required', 'string', 'max:100'],
-            'mata_pelajaran' => ['required', 'string', 'max:100'],
+            'mata_pelajaran' => ['required', 'string', Rule::exists('subjects', 'name')],
             'rombel' => ['required', 'exists:rombels,id'],
             'tahun_ajaran' => ['required', Rule::in(Classroom::academicYearOptions())],
         ], [
             'nama_kelas.required' => 'Nama kelas wajib diisi.',
             'mata_pelajaran.required' => 'Pilih mata pelajaran.',
+            'mata_pelajaran.exists' => 'Mata pelajaran tidak ada di daftar.',
             'rombel.required' => 'Pilih rombel.',
             'rombel.exists' => 'Rombel tidak ditemukan.',
             'tahun_ajaran.required' => 'Pilih tahun ajaran.',
