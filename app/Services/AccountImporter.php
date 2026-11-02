@@ -9,10 +9,12 @@ use App\Support\SimpleXlsx;
 use App\Support\TemporaryPassword;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 /**
  * FR-05, PB-02: impor akun siswa/guru dari Excel.
  * Akun dibuat dengan kata sandi awal yang wajib diganti saat login pertama.
+ * Dua langkah (M08b): check() menampilkan hasil cek dulu, create() baru membuat akun setelah admin menekan Simpan.
  * Baris bermasalah (kosong, dobel, sudah terdaftar) dilaporkan, tidak dibuat.
  */
 class AccountImporter
@@ -26,16 +28,24 @@ class AccountImporter
     ];
 
     /**
-     * @return array{created: list<array{name: string, username: string, rombel: string, password: string}>, problems: list<array{row: int, message: string}>}
+     * Langkah 1: cek isi file tanpa membuat akun apa pun.
+     *
+     * @return array{valid: list<array{row: int, name: string, username: string, rombel: string}>, problems: list<array{row: int, message: string}>}
+     *
+     * @throws RuntimeException kalau file rusak atau judul kolomnya tidak sesuai template
      */
-    public function import(string $path, string $type): array
+    public function check(string $path, string $type): array
     {
         $rows = SimpleXlsx::read($path);
+
+        $header = array_map(fn ($h) => strtolower(trim($h)), array_slice($rows[1] ?? [], 0, count(self::HEADERS[$type])));
+        if ($header !== array_map('strtolower', self::HEADERS[$type])) {
+            throw new RuntimeException('File tidak sesuai template. Unduh template lalu coba lagi.');
+        }
         unset($rows[1]); // baris 1 = judul kolom
 
         $valid = [];
         $problems = [];
-        $seen = [];
 
         foreach ($rows as $rowNumber => $cells) {
             if (implode('', $cells) === '') {
@@ -55,33 +65,51 @@ class AccountImporter
                 continue;
             }
 
-            $key = strtolower($parsed['username']);
-            if (isset($seen[$key])) {
-                $problems[] = ['row' => $rowNumber, 'message' => "{$parsed['username']} dobel dengan baris {$seen[$key]}."];
-
-                continue;
-            }
-            $seen[$key] = $rowNumber;
-
-            $valid[$rowNumber] = $parsed;
+            $valid[$rowNumber] = ['row' => $rowNumber, ...$parsed];
         }
 
-        // Cek yang sudah terdaftar di database
-        $existing = User::whereIn('username', array_column($valid, 'username'))
-            ->pluck('username')
-            ->map(fn ($u) => strtolower($u))
-            ->all();
-
-        foreach ($valid as $rowNumber => $parsed) {
-            if (in_array(strtolower($parsed['username']), $existing, true)) {
-                $problems[] = ['row' => $rowNumber, 'message' => "{$parsed['username']} sudah terdaftar."];
+        // Dobel di file yang sama: semua baris yang dobel dilewati
+        $label = $type === 'siswa' ? 'NISN' : 'NIP/username';
+        $groups = collect($valid)->groupBy(fn ($r) => strtolower($r['username']))->filter(fn ($g) => $g->count() > 1);
+        foreach ($groups as $group) {
+            $numbers = $group->pluck('row')->all();
+            $message = "{$label} dobel di baris ".self::joinNumbers($numbers).'.';
+            foreach ($numbers as $rowNumber) {
+                $problems[] = ['row' => $rowNumber, 'message' => $message];
                 unset($valid[$rowNumber]);
             }
         }
 
+        // Sudah terdaftar di database
+        foreach ($this->alreadyRegistered($valid) as $rowNumber => $username) {
+            $problems[] = ['row' => $rowNumber, 'message' => "{$label} {$username} sudah terdaftar."];
+            unset($valid[$rowNumber]);
+        }
+
         usort($problems, fn ($a, $b) => $a['row'] <=> $b['row']);
 
-        // Buat akun. Hash dengan cost lebih ringan supaya impor ratusan akun tidak kelamaan;
+        return ['valid' => array_values($valid), 'problems' => $problems];
+    }
+
+    /**
+     * Langkah 2: buat akun dari baris yang lolos cek. Dicek ulang dulu,
+     * karena bisa saja ada yang mendaftar di antara langkah cek dan Simpan.
+     *
+     * @param  list<array{row: int, name: string, username: string, rombel: string}>  $valid
+     * @return array{created: list<array{name: string, username: string, rombel: string, password: string}>, problems: list<array{row: int, message: string}>}
+     */
+    public function create(array $valid, string $type): array
+    {
+        $valid = collect($valid)->keyBy('row')->all();
+        $label = $type === 'siswa' ? 'NISN' : 'NIP/username';
+        $problems = [];
+
+        foreach ($this->alreadyRegistered($valid) as $rowNumber => $username) {
+            $problems[] = ['row' => $rowNumber, 'message' => "{$label} {$username} sudah terdaftar."];
+            unset($valid[$rowNumber]);
+        }
+
+        // Hash dengan cost lebih ringan supaya impor ratusan akun tidak kelamaan;
         // aman karena kata sandi awal wajib diganti saat login pertama.
         @set_time_limit(300);
         $rounds = min(10, (int) config('hashing.bcrypt.rounds', 12));
@@ -117,6 +145,32 @@ class AccountImporter
         return ['created' => $created, 'problems' => $problems];
     }
 
+    /** @return array<int, string> nomor baris => username yang sudah ada di database */
+    private function alreadyRegistered(array $valid): array
+    {
+        $existing = User::whereIn('username', array_column($valid, 'username'))
+            ->pluck('username')
+            ->map(fn ($u) => strtolower($u))
+            ->all();
+
+        $found = [];
+        foreach ($valid as $rowNumber => $parsed) {
+            if (in_array(strtolower($parsed['username']), $existing, true)) {
+                $found[$rowNumber] = $parsed['username'];
+            }
+        }
+
+        return $found;
+    }
+
+    /** [5, 12] → "5 dan 12", [3, 5, 12] → "3, 5, dan 12" */
+    private static function joinNumbers(array $numbers): string
+    {
+        $last = array_pop($numbers);
+
+        return $numbers === [] ? (string) $last : implode(', ', $numbers).(count($numbers) > 1 ? ',' : '')." dan {$last}";
+    }
+
     /** @return array{name: string, username: string, rombel: string}|string */
     private function parseSiswa(array $cells): array|string
     {
@@ -144,7 +198,7 @@ class AccountImporter
             return 'Rombel kosong.';
         }
 
-        return ['name' => $name, 'username' => $nisn, 'rombel' => $rombel];
+        return ['name' => $name, 'username' => $nisn, 'rombel' => strtoupper($rombel)];
     }
 
     /** @return array{name: string, username: string, rombel: string}|string */

@@ -142,6 +142,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/impor', [ImportController::class, 'index'])->name('impor.index');
             Route::get('/impor/template/{type}', [ImportController::class, 'template'])->name('impor.template');
             Route::post('/impor', [ImportController::class, 'store'])->name('impor.store');
+            Route::get('/impor/cek', [ImportController::class, 'preview'])->name('impor.cek');
+            Route::post('/impor/simpan', [ImportController::class, 'save'])->name('impor.simpan');
             Route::get('/impor/hasil', [ImportController::class, 'result'])->name('impor.hasil');
             Route::get('/impor/unduh', [ImportController::class, 'download'])->name('impor.unduh');
 

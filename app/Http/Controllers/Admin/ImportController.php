@@ -14,7 +14,7 @@ use Illuminate\View\View;
 use RuntimeException;
 
 /**
- * M08, M08b: impor akun dari Excel (FR-05, PB-02).
+ * M08, M08b: impor akun dari Excel (FR-05, PB-02): unggah → hasil cek → Simpan → unduh kata sandi awal.
  */
 class ImportController extends Controller
 {
@@ -36,6 +36,7 @@ class ImportController extends Controller
         ]);
     }
 
+    /** Langkah 1: unggah file lalu cek isinya. Belum ada akun yang dibuat. */
     public function store(Request $request, AccountImporter $importer): RedirectResponse
     {
         $request->validate([
@@ -44,21 +45,52 @@ class ImportController extends Controller
         ], [
             'type.required' => 'Pilih jenis data: siswa atau guru.',
             'file.required' => 'Pilih file Excel dulu.',
-            'file.extensions' => 'File harus berformat Excel (.xlsx).',
+            'file.extensions' => 'File tidak sesuai template. Unduh template lalu coba lagi.',
             'file.max' => 'Ukuran file maksimal 5 MB.',
         ]);
 
         try {
-            $result = $importer->import($request->file('file')->getRealPath(), $request->type);
+            $check = $importer->check($request->file('file')->getRealPath(), $request->type);
         } catch (RuntimeException $e) {
-            return back()->withErrors(['file' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['file' => $e->getMessage()]);
         }
+
+        $request->session()->put('import_check', ['type' => $request->type, ...$check]);
+        $request->session()->forget('import_result');
+
+        return redirect()->route('admin.impor.cek');
+    }
+
+    /** Hasil cek: jumlah baris siap dan baris bermasalah, sebelum admin menekan Simpan. */
+    public function preview(Request $request): View|RedirectResponse
+    {
+        $check = $request->session()->get('import_check');
+
+        if (! $check) {
+            return redirect()->route('admin.impor.index');
+        }
+
+        return view('admin.impor.cek', ['check' => $check]);
+    }
+
+    /** Langkah 2: buat akun untuk baris yang lolos cek. */
+    public function save(Request $request, AccountImporter $importer): RedirectResponse
+    {
+        // Diambil sekaligus dihapus dari sesi, supaya Simpan yang ditekan dua kali tidak membuat akun dobel
+        $check = $request->session()->pull('import_check');
+
+        if (! $check || $check['valid'] === []) {
+            return redirect()->route('admin.impor.index');
+        }
+
+        $result = $importer->create($check['valid'], $check['type']);
+        $problems = collect([...$check['problems'], ...$result['problems']])->sortBy('row')->values()->all();
 
         // Kata sandi awal disimpan terenkripsi di sesi, hanya untuk diunduh admin.
         $request->session()->put('import_result', [
-            'type' => $request->type,
+            'type' => $check['type'],
             'created_count' => count($result['created']),
-            'problems' => $result['problems'],
+            'problems' => $problems,
             'credentials' => Crypt::encrypt($result['created']),
             'at' => now()->format('Ymd-His'),
         ]);
