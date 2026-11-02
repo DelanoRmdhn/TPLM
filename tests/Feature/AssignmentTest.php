@@ -296,18 +296,34 @@ class AssignmentTest extends TestCase
         $this->actingAs($this->guru)->get('/guru/beranda')->assertSee('1 tugas perlu dinilai');
     }
 
-    public function test_hapus_tugas_ikut_hapus_pengumpulan_dan_file(): void
+    public function test_tugas_yang_sudah_dikumpulkan_tidak_bisa_dihapus(): void
     {
         $tugas = $this->tugas();
         $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), ['files' => [UploadedFile::fake()->image('a.jpg')]]);
         $path = SubmissionFile::first()->path;
 
+        $this->actingAs($this->guru)->get($this->url($tugas))
+            ->assertDontSee('Hapus Tugas')
+            ->assertSee('Tugas ini sudah dikumpulkan siswa, jadi tidak bisa dihapus.');
+
+        $this->actingAs($this->guru)->delete($this->url($tugas))
+            ->assertRedirect($this->url($tugas))
+            ->assertSessionHasErrors(['tugas' => 'Tugas ini sudah dikumpulkan siswa, jadi tidak bisa dihapus.']);
+
+        $this->assertSame(1, Assignment::count());
+        $this->assertSame(1, Submission::count());
+        Storage::disk('local')->assertExists($path);
+    }
+
+    public function test_hapus_tugas_yang_belum_dikumpulkan(): void
+    {
+        $tugas = $this->tugas();
+
+        $this->actingAs($this->guru)->get($this->url($tugas))->assertSee('Hapus Tugas');
+
         $this->actingAs($this->guru)->delete($this->url($tugas))->assertRedirect("/kelas/{$this->kelas->id}");
 
         $this->assertSame(0, Assignment::count());
-        $this->assertSame(0, Submission::count());
-        $this->assertSame(0, SubmissionFile::count());
-        Storage::disk('local')->assertMissing($path);
     }
 
     public function test_empat_status(): void

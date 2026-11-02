@@ -72,11 +72,15 @@
         </ul>
     </section>
 
-    <form method="POST" action="{{ route('kelas.tugas.destroy', [$classroom, $assignment]) }}"
-        onsubmit="return confirm(@js('Hapus tugas '.$assignment->title.'? Semua pengumpulan dan nilai siswa ikut terhapus.'))">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="h-12 w-full rounded-control border border-red-300 text-danger">Hapus Tugas</button>
-    </form>
+    @if ($canDelete)
+        <form method="POST" action="{{ route('kelas.tugas.destroy', [$classroom, $assignment]) }}"
+            onsubmit="return confirm(@js('Hapus tugas '.$assignment->title.'? Siswa tidak bisa membukanya lagi.'))">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="h-12 w-full rounded-control border border-red-300 text-danger">Hapus Tugas</button>
+        </form>
+    @else
+        <p class="text-center text-caption text-text-muted">Tugas ini sudah dikumpulkan siswa, jadi tidak bisa dihapus.</p>
+    @endif
 
 @endsection

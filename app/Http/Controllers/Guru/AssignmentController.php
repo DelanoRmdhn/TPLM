@@ -85,6 +85,12 @@ class AssignmentController extends Controller
     {
         Gate::authorize('manage', $classroom);
 
+        // Pengumpulan dan nilai siswa harus tetap ada
+        if ($assignment->hasSubmissions()) {
+            return redirect()->route('kelas.tugas.show', [$classroom, $assignment])
+                ->withErrors(['tugas' => 'Tugas ini sudah dikumpulkan siswa, jadi tidak bisa dihapus.']);
+        }
+
         $assignment->delete();
 
         return redirect()->route('kelas.show', $classroom)->with('status', "Tugas {$assignment->title} dihapus.");
