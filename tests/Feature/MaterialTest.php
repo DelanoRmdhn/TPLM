@@ -197,6 +197,81 @@ class MaterialTest extends TestCase
         $this->assertSame(1, Material::count());
     }
 
+    public function test_guru_ubah_materi_tambah_dan_hapus_lampiran(): void
+    {
+        $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/materi", [
+            'title' => 'Pecahan', 'files' => [$this->pdf('lama.pdf')],
+        ]);
+        $material = Material::first();
+        $lama = $material->attachments()->first();
+
+        $this->actingAs($this->guru)->get("/kelas/{$this->kelas->id}/materi/{$material->id}")->assertSee('Ubah Materi');
+        $this->actingAs($this->guru)->get("/kelas/{$this->kelas->id}/materi/{$material->id}/ubah")
+            ->assertOk()
+            ->assertSee('lama.pdf')
+            ->assertSee('Simpan Perubahan');
+
+        $this->actingAs($this->guru)->put("/kelas/{$this->kelas->id}/materi/{$material->id}", [
+            'title' => 'Pecahan Senilai',
+            'description' => 'Baca dulu ya.',
+            'new_topic' => 'Bab 2',
+            'remove_attachments' => [$lama->id],
+            'files' => [$this->pdf('baru.pdf')],
+        ])->assertRedirect("/kelas/{$this->kelas->id}/materi/{$material->id}")
+            ->assertSessionHas('status', 'Materi berhasil diubah.');
+
+        $material->refresh();
+        $this->assertSame('Pecahan Senilai', $material->title);
+        $this->assertSame('Bab 2', $material->topic->name);
+        $this->assertSame(['baru.pdf'], $material->attachments()->pluck('original_name')->all());
+        Storage::disk('local')->assertMissing($lama->path);
+    }
+
+    public function test_ubah_materi_tidak_bisa_hapus_lampiran_materi_lain(): void
+    {
+        $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/materi", ['title' => 'A', 'files' => [$this->pdf()]]);
+        $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/materi", ['title' => 'B', 'description' => 'isi']);
+        [$a, $b] = Material::orderBy('id')->get()->all();
+        $punyaA = $a->attachments()->first();
+
+        $this->actingAs($this->guru)->put("/kelas/{$this->kelas->id}/materi/{$b->id}", [
+            'title' => 'B', 'description' => 'isi', 'remove_attachments' => [$punyaA->id],
+        ]);
+
+        $this->assertNotNull($punyaA->fresh());
+        Storage::disk('local')->assertExists($punyaA->path);
+    }
+
+    public function test_ubah_materi_tidak_boleh_jadi_kosong(): void
+    {
+        $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/materi", ['title' => 'A', 'files' => [$this->pdf()]]);
+        $material = Material::first();
+        $file = $material->attachments()->first();
+
+        $this->actingAs($this->guru)->put("/kelas/{$this->kelas->id}/materi/{$material->id}", [
+            'title' => '', 'remove_attachments' => [$file->id],
+        ])->assertSessionHasErrors(['title' => 'Judul wajib diisi.']);
+
+        $this->actingAs($this->guru)->put("/kelas/{$this->kelas->id}/materi/{$material->id}", [
+            'title' => 'A', 'remove_attachments' => [$file->id],
+        ])->assertSessionHasErrors('description');
+
+        $this->assertSame(1, $material->attachments()->count());
+    }
+
+    public function test_siswa_dan_guru_lain_tidak_bisa_ubah_materi(): void
+    {
+        $material = $this->kelas->materials()->create(['author_id' => $this->guru->id, 'title' => 'Materi']);
+        $guruLain = User::factory()->create(['role' => Role::Guru]);
+
+        $this->actingAs($this->siswa)->get("/kelas/{$this->kelas->id}/materi/{$material->id}")->assertDontSee('Ubah Materi');
+        $this->actingAs($this->siswa)->get("/kelas/{$this->kelas->id}/materi/{$material->id}/ubah")->assertForbidden();
+        $this->actingAs($this->siswa)->put("/kelas/{$this->kelas->id}/materi/{$material->id}", ['title' => 'X', 'description' => 'Y'])->assertForbidden();
+        $this->actingAs($guruLain)->put("/kelas/{$this->kelas->id}/materi/{$material->id}", ['title' => 'X', 'description' => 'Y'])->assertForbidden();
+
+        $this->assertSame('Materi', $material->fresh()->title);
+    }
+
     public function test_hapus_materi_ikut_hapus_file(): void
     {
         $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/materi", ['title' => 'Materi', 'files' => [$this->pdf()]]);

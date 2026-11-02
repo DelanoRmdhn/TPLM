@@ -103,11 +103,15 @@ Route::middleware('auth')->group(function () {
             // M04b: buat materi
             Route::get('/kelas/{classroom}/materi/buat', [MaterialController::class, 'create'])->name('kelas.materi.create');
             Route::post('/kelas/{classroom}/materi', [MaterialController::class, 'store'])->name('kelas.materi.store');
+            Route::get('/kelas/{classroom}/materi/{material}/ubah', [MaterialController::class, 'edit'])->name('kelas.materi.edit');
+            Route::put('/kelas/{classroom}/materi/{material}', [MaterialController::class, 'update'])->name('kelas.materi.update');
             Route::delete('/kelas/{classroom}/materi/{material}', [MaterialController::class, 'destroy'])->name('kelas.materi.destroy');
 
             // M04: buat tugas
             Route::get('/kelas/{classroom}/tugas/buat', [GuruAssignmentController::class, 'create'])->name('kelas.tugas.create');
             Route::post('/kelas/{classroom}/tugas', [GuruAssignmentController::class, 'store'])->name('kelas.tugas.store');
+            Route::get('/kelas/{classroom}/tugas/{assignment}/ubah', [GuruAssignmentController::class, 'edit'])->name('kelas.tugas.edit');
+            Route::put('/kelas/{classroom}/tugas/{assignment}', [GuruAssignmentController::class, 'update'])->name('kelas.tugas.update');
             Route::delete('/kelas/{classroom}/tugas/{assignment}', [GuruAssignmentController::class, 'destroy'])->name('kelas.tugas.destroy');
         });
 
