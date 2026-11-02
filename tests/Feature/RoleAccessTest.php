@@ -50,4 +50,40 @@ class RoleAccessTest extends TestCase
         $this->actingAs($admin)->get('/siswa/beranda')->assertForbidden();
         $this->actingAs($admin)->get('/guru/beranda')->assertForbidden();
     }
+
+    public function test_halaman_403_ramah_dengan_tombol_kembali_ke_beranda(): void
+    {
+        $siswa = User::factory()->create(['role' => Role::Siswa]);
+
+        $this->actingAs($siswa)->get('/admin/akun')
+            ->assertForbidden()
+            ->assertSee('Kamu tidak punya akses ke halaman ini.')
+            ->assertSee('Kembali ke Beranda')
+            ->assertSee(route('siswa.beranda'));
+    }
+
+    public function test_403_dari_kelas_orang_lain_juga_ramah(): void
+    {
+        $guru = User::factory()->create(['role' => Role::Guru]);
+        $kelas = \App\Models\Classroom::factory()->create();
+
+        $this->actingAs($guru)->get("/kelas/{$kelas->id}")
+            ->assertForbidden()
+            ->assertSee('Kamu tidak punya akses ke halaman ini.')
+            ->assertDontSee('This action is unauthorized')
+            ->assertSee(route('guru.beranda'));
+    }
+
+    public function test_halaman_404_ramah(): void
+    {
+        $siswa = User::factory()->create(['role' => Role::Siswa]);
+
+        $this->actingAs($siswa)->get('/kelas/99999')
+            ->assertNotFound()
+            ->assertSee('Halaman tidak ditemukan.')
+            ->assertSee('Kembali ke Beranda');
+
+        auth()->logout();
+        $this->get('/tidak-ada')->assertNotFound()->assertSee('Kembali ke Login');
+    }
 }
