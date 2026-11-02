@@ -24,11 +24,11 @@ class AccountSettingsTest extends TestCase
     {
         $siswa = User::factory()->create([
             'name' => 'Ani', 'username' => '0012345601', 'role' => Role::Siswa,
-            'rombel_id' => Rombel::findOrCreateByName('4-A')->id,
+            'rombel_id' => Rombel::findOrCreateByName('4A')->id,
         ]);
 
         $this->actingAs($siswa)->get('/akun')->assertOk()
-            ->assertSee('Ani')->assertSee('NISN')->assertSee('0012345601')->assertSee('4-A');
+            ->assertSee('Ani')->assertSee('NISN')->assertSee('0012345601')->assertSee('4A');
 
         foreach ([Role::Guru, Role::Admin] as $role) {
             $this->actingAs(User::factory()->create(['role' => $role]))->get('/akun')->assertOk()->assertSee('Ganti kata sandi');

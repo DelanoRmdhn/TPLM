@@ -31,11 +31,11 @@ class StudentTasksTest extends TestCase
         // Senin siang, supaya "Hari ini/Besok/Minggu ini" pasti
         $this->travelTo(Carbon::parse('2026-11-02 10:00'));
 
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
         $guru = User::factory()->create(['role' => Role::Guru]);
         $this->ani = User::factory()->create(['role' => Role::Siswa, 'rombel_id' => $rombel->id]);
         $this->budi = User::factory()->create(['role' => Role::Siswa, 'rombel_id' => $rombel->id]);
-        $this->mtk = Classroom::factory()->create(['teacher_id' => $guru->id, 'name' => 'Matematika 4-A', 'subject' => 'Matematika']);
+        $this->mtk = Classroom::factory()->create(['teacher_id' => $guru->id, 'name' => 'Matematika 4A', 'subject' => 'Matematika']);
         $this->mtk->addRombel($rombel);
     }
 
@@ -130,7 +130,7 @@ class StudentTasksTest extends TestCase
 
         $this->actingAs($this->ani)->get('/siswa/nilai')
             ->assertOk()
-            ->assertSee('Matematika 4-A')
+            ->assertSee('Matematika 4A')
             ->assertSee('Latihan Pecahan')
             ->assertSee('85')
             ->assertSee('Rapi sekali!')

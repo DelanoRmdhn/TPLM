@@ -18,6 +18,9 @@ class AttachmentUploader
     /** @var list<string> path file yang sudah disimpan, untuk dibersihkan kalau gagal */
     private array $stored = [];
 
+    /** @var list<string> path file lampiran yang dihapus, dibersihkan setelah transaksi berhasil */
+    private array $removed = [];
+
     /** Aturan validasi untuk input files[] dan links. */
     public static function rules(): array
     {
@@ -76,6 +79,38 @@ class AttachmentUploader
         foreach ($links as $url) {
             $owner->attachments()->create(['type' => Attachment::TYPE_LINK, 'url' => $url]);
         }
+    }
+
+    /** Aturan untuk centang "hapus lampiran ini" di form ubah. */
+    public static function removalRules(): array
+    {
+        return [
+            'remove_attachments' => ['nullable', 'array'],
+            'remove_attachments.*' => ['integer'],
+        ];
+    }
+
+    /**
+     * Hapus baris lampiran yang dicentang (hanya milik $owner).
+     * File fisiknya baru dihapus lewat purgeRemoved() setelah transaksi berhasil,
+     * supaya file tidak hilang kalau penyimpanan gagal di tengah jalan.
+     */
+    public function remove(Model $owner, array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        $query = $owner->attachments()->whereIn('id', $ids);
+        $this->removed = array_merge($this->removed, (clone $query)->whereNotNull('path')->pluck('path')->all());
+        $query->delete();
+    }
+
+    /** Hapus file fisik lampiran yang sudah dihapus lewat remove(). */
+    public function purgeRemoved(): void
+    {
+        Storage::disk('local')->delete($this->removed);
+        $this->removed = [];
     }
 
     /** Hapus file yang sudah tersimpan (dipanggil kalau transaksi gagal). */

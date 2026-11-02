@@ -59,7 +59,7 @@ class AdminAccountTest extends TestCase
         $ani = User::where('username', '0012345678')->first();
         $this->assertSame(Role::Siswa, $ani->role);
         $this->assertTrue($ani->must_change_password);
-        $this->assertSame('4-B', $ani->rombel->name);
+        $this->assertSame('4B', $ani->rombel->name);
 
         $password = session('temporary_password')['password'];
         $this->assertTrue(Hash::check($password, $ani->password));
@@ -70,11 +70,11 @@ class AdminAccountTest extends TestCase
         User::factory()->create(['username' => '0012345678']);
 
         $this->actingAs($this->admin)->post('/admin/akun', [
-            'role' => 'siswa', 'name' => 'Ani', 'username' => '0012345678', 'rombel' => '4-A',
+            'role' => 'siswa', 'name' => 'Ani', 'username' => '0012345678', 'rombel' => '4A',
         ])->assertSessionHasErrors(['username' => 'NISN ini sudah terdaftar.']);
 
         $this->actingAs($this->admin)->post('/admin/akun', [
-            'role' => 'siswa', 'name' => 'Ani', 'username' => '12345', 'rombel' => '4-A',
+            'role' => 'siswa', 'name' => 'Ani', 'username' => '12345', 'rombel' => '4A',
         ])->assertSessionHasErrors(['username' => 'NISN harus 10 digit angka.']);
 
         $this->actingAs($this->admin)->post('/admin/akun', [
@@ -142,6 +142,6 @@ class AdminAccountTest extends TestCase
 
     public function test_rombel_huruf_kecil_disamakan(): void
     {
-        $this->assertSame(Rombel::findOrCreateByName('4-a')->id, Rombel::findOrCreateByName(' 4-A ')->id);
+        $this->assertSame(Rombel::findOrCreateByName('4-a')->id, Rombel::findOrCreateByName(' 4A ')->id);
     }
 }

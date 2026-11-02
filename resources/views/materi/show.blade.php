@@ -52,8 +52,10 @@
     @endforeach
 
     @if ($canManage)
+        <a href="{{ route('kelas.materi.edit', [$classroom, $material]) }}" class="flex h-12 items-center justify-center rounded-control border border-brand font-semibold text-brand">Ubah Materi</a>
+
         <form method="POST" action="{{ route('kelas.materi.destroy', [$classroom, $material]) }}"
-            onsubmit="return confirm(@js('Hapus materi '.$material->title.'? File lampirannya ikut terhapus.'))">
+            onsubmit="return confirm(@js('Hapus materi '.$material->title.'? Siswa tidak bisa membukanya lagi.'))">
             @csrf
             @method('DELETE')
             <button type="submit" class="h-12 w-full rounded-control border border-red-300 text-danger">Hapus Materi</button>

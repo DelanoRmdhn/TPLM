@@ -125,10 +125,10 @@ class SubjectTest extends TestCase
     public function test_buat_kelas_dengan_mapel_di_luar_daftar_ditolak(): void
     {
         $guru = User::factory()->create(['role' => Role::Guru]);
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
 
         $this->actingAs($guru)->post('/guru/kelas', [
-            'nama_kelas' => 'Kimia 4-A',
+            'nama_kelas' => 'Kimia 4A',
             'mata_pelajaran' => 'Kimia',
             'rombel' => $rombel->id,
             'tahun_ajaran' => Classroom::academicYearOptions()[0],

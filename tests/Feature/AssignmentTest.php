@@ -34,7 +34,7 @@ class AssignmentTest extends TestCase
         $this->withoutVite();
         Storage::fake('local');
 
-        $rombel = Rombel::findOrCreateByName('4-A');
+        $rombel = Rombel::findOrCreateByName('4A');
         $this->guru = User::factory()->create(['role' => Role::Guru]);
         $this->ani = User::factory()->create(['role' => Role::Siswa, 'name' => 'Ani', 'rombel_id' => $rombel->id]);
         $this->budi = User::factory()->create(['role' => Role::Siswa, 'name' => 'Budi', 'rombel_id' => $rombel->id]);
@@ -86,10 +86,100 @@ class AssignmentTest extends TestCase
         ])->assertSessionHasErrors([
             'title',
             'due_at' => 'Tenggat harus setelah waktu sekarang.',
-            'max_score' => 'Nilai maksimal minimal 1.',
+            'max_score' => 'Nilai maksimal harus angka 1 sampai 100.',
         ]);
 
+        foreach ([101, 'abc'] as $bad) {
+            $this->actingAs($this->guru)->post("/kelas/{$this->kelas->id}/tugas", [
+                'title' => 'Tugas', 'due_at' => now()->addDay()->format('Y-m-d\TH:i'), 'max_score' => $bad,
+            ])->assertSessionHasErrors(['max_score' => 'Nilai maksimal harus angka 1 sampai 100.']);
+        }
+
         $this->assertSame(0, Assignment::count());
+    }
+
+    public function test_guru_ubah_tugas(): void
+    {
+        $tugas = $this->tugas(['title' => 'Latihan', 'max_score' => 100]);
+        $due = now()->addDays(5)->setTime(23, 59);
+
+        $this->actingAs($this->guru)->get($this->url($tugas))->assertSee('Ubah Tugas');
+        $this->actingAs($this->guru)->get($this->url($tugas, '/ubah'))->assertOk()->assertSee('Simpan Perubahan');
+
+        $this->actingAs($this->guru)->put($this->url($tugas), [
+            'title' => 'Latihan Pecahan',
+            'instructions' => 'Halaman 15.',
+            'due_at' => $due->format('Y-m-d\TH:i'),
+            'max_score' => 50,
+            'links' => 'https://youtu.be/dQw4w9WgXcQ',
+        ])->assertRedirect($this->url($tugas))
+            ->assertSessionHas('status', 'Tugas berhasil diubah.');
+
+        $tugas->refresh();
+        $this->assertSame('Latihan Pecahan', $tugas->title);
+        $this->assertSame(50, $tugas->max_score);
+        $this->assertSame($due->format('Y-m-d H:i'), $tugas->due_at->format('Y-m-d H:i'));
+        $this->assertSame(1, $tugas->attachments()->count());
+    }
+
+    public function test_ubah_tenggat_menghitung_ulang_status(): void
+    {
+        $tugas = $this->tugas(['due_at' => now()->subDay()]);
+        $this->assertSame(AssignmentStatus::Terlambat, $tugas->statusFor($this->ani));
+
+        $this->actingAs($this->guru)->put($this->url($tugas), [
+            'title' => $tugas->title,
+            'due_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+            'max_score' => 100,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(AssignmentStatus::BelumDikerjakan, $tugas->fresh()->statusFor($this->ani));
+    }
+
+    public function test_ubah_tugas_lewat_tenggat_tanpa_ganti_tenggat_boleh(): void
+    {
+        $tugas = $this->tugas(['due_at' => now()->subDay()->setSeconds(0)]);
+
+        $this->actingAs($this->guru)->put($this->url($tugas), [
+            'title' => 'Judul baru',
+            'due_at' => $tugas->due_at->format('Y-m-d\TH:i'),
+            'max_score' => 100,
+        ])->assertSessionHasNoErrors();
+
+        $this->actingAs($this->guru)->put($this->url($tugas), [
+            'title' => 'Judul baru',
+            'due_at' => now()->subHour()->format('Y-m-d\TH:i'),
+            'max_score' => 100,
+        ])->assertSessionHasErrors(['due_at' => 'Tenggat harus setelah waktu sekarang.']);
+
+        $this->assertSame('Judul baru', $tugas->fresh()->title);
+    }
+
+    public function test_nilai_maksimal_tidak_boleh_di_bawah_nilai_yang_sudah_diberikan(): void
+    {
+        $tugas = $this->tugas(['max_score' => 100]);
+        Grade::create(['assignment_id' => $tugas->id, 'student_id' => $this->ani->id, 'score' => 80]);
+
+        $this->actingAs($this->guru)->put($this->url($tugas), [
+            'title' => $tugas->title,
+            'due_at' => $tugas->due_at->format('Y-m-d\TH:i'),
+            'max_score' => 50,
+        ])->assertSessionHasErrors(['max_score' => 'Nilai maksimal tidak boleh di bawah nilai yang sudah diberikan (80).']);
+
+        $this->assertSame(100, $tugas->fresh()->max_score);
+    }
+
+    public function test_siswa_dan_guru_lain_tidak_bisa_ubah_tugas(): void
+    {
+        $tugas = $this->tugas(['title' => 'Asli']);
+        $guruLain = User::factory()->create(['role' => Role::Guru]);
+        $payload = ['title' => 'X', 'due_at' => now()->addDay()->format('Y-m-d\TH:i'), 'max_score' => 100];
+
+        $this->actingAs($this->ani)->get($this->url($tugas, '/ubah'))->assertForbidden();
+        $this->actingAs($this->ani)->put($this->url($tugas), $payload)->assertForbidden();
+        $this->actingAs($guruLain)->put($this->url($tugas), $payload)->assertForbidden();
+
+        $this->assertSame('Asli', $tugas->fresh()->title);
     }
 
     public function test_siswa_dan_guru_lain_tidak_bisa_buat_tugas(): void
@@ -296,18 +386,34 @@ class AssignmentTest extends TestCase
         $this->actingAs($this->guru)->get('/guru/beranda')->assertSee('1 tugas perlu dinilai');
     }
 
-    public function test_hapus_tugas_ikut_hapus_pengumpulan_dan_file(): void
+    public function test_tugas_yang_sudah_dikumpulkan_tidak_bisa_dihapus(): void
     {
         $tugas = $this->tugas();
         $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), ['files' => [UploadedFile::fake()->image('a.jpg')]]);
         $path = SubmissionFile::first()->path;
 
+        $this->actingAs($this->guru)->get($this->url($tugas))
+            ->assertDontSee('Hapus Tugas')
+            ->assertSee('Tugas ini sudah dikumpulkan siswa, jadi tidak bisa dihapus.');
+
+        $this->actingAs($this->guru)->delete($this->url($tugas))
+            ->assertRedirect($this->url($tugas))
+            ->assertSessionHasErrors(['tugas' => 'Tugas ini sudah dikumpulkan siswa, jadi tidak bisa dihapus.']);
+
+        $this->assertSame(1, Assignment::count());
+        $this->assertSame(1, Submission::count());
+        Storage::disk('local')->assertExists($path);
+    }
+
+    public function test_hapus_tugas_yang_belum_dikumpulkan(): void
+    {
+        $tugas = $this->tugas();
+
+        $this->actingAs($this->guru)->get($this->url($tugas))->assertSee('Hapus Tugas');
+
         $this->actingAs($this->guru)->delete($this->url($tugas))->assertRedirect("/kelas/{$this->kelas->id}");
 
         $this->assertSame(0, Assignment::count());
-        $this->assertSame(0, Submission::count());
-        $this->assertSame(0, SubmissionFile::count());
-        Storage::disk('local')->assertMissing($path);
     }
 
     public function test_empat_status(): void

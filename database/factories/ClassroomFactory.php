@@ -19,7 +19,7 @@ class ClassroomFactory extends Factory
     {
         return [
             'teacher_id' => User::factory()->state(['role' => Role::Guru]),
-            'name' => 'Matematika 4-A',
+            'name' => 'Matematika 4A',
             'subject' => 'Matematika',
             'rombel_id' => null,
             'academic_year' => '2026/2027',

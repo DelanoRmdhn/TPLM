@@ -51,6 +51,7 @@ class AssignmentController extends Controller
             'assignment' => $assignment,
             'sudah' => $sudah->values(),
             'belum' => $belum->values(),
+            'canDelete' => $submissions->isEmpty() && ! $assignment->hasSubmissions(),
         ]);
     }
 

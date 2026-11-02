@@ -68,6 +68,12 @@ class Assignment extends Model
         return $this->hasMany(Grade::class);
     }
 
+    /** Sudah ada siswa yang menyerahkan; tugas seperti ini tidak boleh dihapus. */
+    public function hasSubmissions(): bool
+    {
+        return $this->submissions()->whereNotNull('submitted_at')->exists();
+    }
+
     public function isPastDue(): bool
     {
         return $this->due_at !== null && $this->due_at->isPast();

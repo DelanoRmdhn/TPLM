@@ -20,9 +20,8 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $rombel4A = Rombel::findOrCreateByName('4-A');
-        Rombel::findOrCreateByName('4-B');
-        Rombel::findOrCreateByName('4-C');
+        // Rombel 1A–6B sudah diisi lewat migration
+        $rombel4A = Rombel::findByName('4A');
 
         User::factory()->create([
             'name' => 'Admin',
@@ -52,9 +51,9 @@ class DatabaseSeeder extends Seeder
             'must_change_password' => true,
         ]);
 
-        // Satu kelas contoh, berisi semua siswa rombel 4-A
+        // Satu kelas contoh, berisi semua siswa rombel 4A
         $kelas = $guru->teachingClassrooms()->create([
-            'name' => 'Matematika 4-A',
+            'name' => 'Matematika 4A',
             'subject' => 'Matematika',
             'rombel_id' => $rombel4A->id,
             'academic_year' => Classroom::academicYearOptions()[0],
