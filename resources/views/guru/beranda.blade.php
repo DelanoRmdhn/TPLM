@@ -146,6 +146,23 @@
                 </div>
             </section>
 
+            {{-- KELAS DIARSIPKAN --}}
+            @if ($archivedClassrooms->isNotEmpty())
+                <details class="rounded-2xl border border-slate-200 bg-white p-4">
+                    <summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Kelas diarsipkan ({{ $archivedClassrooms->count() }})</summary>
+                    <ul class="mt-2 divide-y divide-slate-200">
+                        @foreach ($archivedClassrooms as $kelas)
+                            <li>
+                                <a href="{{ route('kelas.show', $kelas) }}" class="flex min-h-[50px] items-center justify-between gap-2 py-2">
+                                    <span class="font-semibold">{{ $kelas->name }}</span>
+                                    <span class="text-sm text-slate-600">{{ $kelas->academic_year }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </details>
+            @endif
+
         </main>
     </div>
 

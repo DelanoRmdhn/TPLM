@@ -31,7 +31,7 @@ class TaskController extends Controller
 
     public function grades(Request $request, StudentTasks $tasks): View
     {
-        $graded = $tasks->for($request->user())
+        $graded = $tasks->for($request->user(), includeArchived: true)
             ->filter(fn ($row) => $row->grade !== null)
             ->sortByDesc(fn ($row) => $row->grade->updated_at)
             ->groupBy(fn ($row) => $row->assignment->classroom->name);

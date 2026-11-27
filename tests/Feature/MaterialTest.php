@@ -299,4 +299,41 @@ class MaterialTest extends TestCase
         $this->assertSame('dQw4w9WgXcQ', Attachment::parseYoutubeId('https://m.youtube.com/shorts/dQw4w9WgXcQ'));
         $this->assertNull(Attachment::parseYoutubeId('https://vimeo.com/123'));
     }
+
+    public function test_guru_ubah_nama_topik(): void
+    {
+        $topik = $this->kelas->topics()->create(['name' => 'Bab 1', 'position' => 1]);
+
+        $this->actingAs($this->guru)->put("/kelas/{$this->kelas->id}/topik/{$topik->id}", ['name' => 'Bab 1: Pecahan'])
+            ->assertSessionHas('status', 'Nama topik diubah.');
+
+        $this->assertSame('Bab 1: Pecahan', $topik->fresh()->name);
+    }
+
+    public function test_hapus_topik_materinya_pindah_ke_tanpa_topik(): void
+    {
+        $topik = $this->kelas->topics()->create(['name' => 'Bab 1', 'position' => 1]);
+        $material = $this->kelas->materials()->create(['author_id' => $this->guru->id, 'topic_id' => $topik->id, 'title' => 'Pecahan']);
+
+        $this->actingAs($this->guru)->delete("/kelas/{$this->kelas->id}/topik/{$topik->id}")
+            ->assertSessionHas('status', 'Topik Bab 1 dihapus. Tugas dan materinya pindah ke Tanpa topik.');
+
+        $this->assertModelMissing($topik);
+        $this->assertNull($material->fresh()->topic_id);
+        $this->actingAs($this->guru)->get("/kelas/{$this->kelas->id}")->assertSeeInOrder(['Tanpa topik', 'Pecahan']);
+    }
+
+    public function test_topik_hanya_bisa_diubah_guru_pengajar_di_kelasnya(): void
+    {
+        $topik = $this->kelas->topics()->create(['name' => 'Bab 1', 'position' => 1]);
+        $guruLain = User::factory()->create(['role' => Role::Guru]);
+        $kelasLain = Classroom::factory()->create(['teacher_id' => $guruLain->id]);
+
+        $this->actingAs($this->siswa)->put("/kelas/{$this->kelas->id}/topik/{$topik->id}", ['name' => 'X'])->assertForbidden();
+        $this->actingAs($guruLain)->delete("/kelas/{$this->kelas->id}/topik/{$topik->id}")->assertForbidden();
+        // Topik kelas lain lewat URL kelas sendiri
+        $this->actingAs($guruLain)->delete("/kelas/{$kelasLain->id}/topik/{$topik->id}")->assertNotFound();
+
+        $this->assertSame('Bab 1', $topik->fresh()->name);
+    }
 }

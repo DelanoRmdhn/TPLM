@@ -17,12 +17,12 @@ class ClassroomPageController extends Controller
     {
         Gate::authorize('view', $classroom);
 
-        $classroom->load(['teacher', 'topics.materials.attachments', 'topics.assignments']);
+        $classroom->load(['teacher', 'subject', 'topics.materials.attachments', 'topics.assignments']);
         $canManage = Gate::allows('manage', $classroom);
 
         // Status tiap tugas untuk siswa yang sedang login (PB-13)
         $statuses = [];
-        if (! $canManage) {
+        if ($request->user()->isSiswa()) {
             $assignments = $classroom->assignments()
                 ->with([
                     'submissions' => fn ($q) => $q->where('student_id', $request->user()->id),
@@ -42,6 +42,7 @@ class ClassroomPageController extends Controller
         return view('kelas.show', [
             'classroom' => $classroom,
             'canManage' => $canManage,
+            'canOwn' => Gate::allows('own', $classroom),
             'statuses' => $statuses,
             'withoutTopic' => $classroom->materials()->whereNull('topic_id')->with('attachments')->latest()->get(),
             'assignmentsWithoutTopic' => $classroom->assignments()->whereNull('topic_id')->latest()->get(),

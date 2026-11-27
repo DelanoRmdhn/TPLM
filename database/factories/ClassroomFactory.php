@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\Role;
 use App\Models\Classroom;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,7 +21,7 @@ class ClassroomFactory extends Factory
         return [
             'teacher_id' => User::factory()->state(['role' => Role::Guru]),
             'name' => 'Matematika 4A',
-            'subject' => 'Matematika',
+            'subject_id' => fn () => Subject::firstOrCreate(['name' => 'Matematika'])->id,
             'rombel_id' => null,
             'academic_year' => '2026/2027',
         ];

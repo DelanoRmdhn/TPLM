@@ -57,10 +57,18 @@
                     </a>
                 @endforeach
             </div>
+
+            @if (! $grade && ! $classroom->isArchived())
+                <form method="POST" action="{{ route('kelas.tugas.batal', [$classroom, $assignment]) }}"
+                    onsubmit="return confirm(@js($assignment->isPastDue() ? 'Batalkan pengumpulan? Tenggat sudah lewat, jadi kalau dikumpulkan ulang akan ditandai terlambat.' : 'Batalkan pengumpulan? Foto dan jawaban yang sudah dikirim akan dihapus.'))">
+                    @csrf
+                    <button type="submit" class="h-12 w-full rounded-control border border-red-300 font-semibold text-danger">Batalkan Pengumpulan</button>
+                </form>
+            @endif
         </section>
 
     {{-- Form kumpul (PB-12): foto dari kamera / galeri, file, atau teks --}}
-    @elseif (! $grade)
+    @elseif (! $grade && ! $classroom->isArchived())
         <form id="form-kumpul" method="POST" action="{{ route('kelas.tugas.kumpul', [$classroom, $assignment]) }}" enctype="multipart/form-data"
             class="space-y-3 rounded-card border border-border bg-white p-4">
             @csrf

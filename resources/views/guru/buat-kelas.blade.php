@@ -87,7 +87,7 @@
                                 class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                             >
                                 @forelse ($subjects as $subject)
-                                    <option value="{{ $subject }}" @selected(old('mata_pelajaran') === $subject)>{{ $subject }}</option>
+                                    <option value="{{ $subject->id }}" @selected((int) old('mata_pelajaran') === $subject->id)>{{ $subject->name }}</option>
                                 @empty
                                     <option value="" disabled selected>Belum ada mata pelajaran. Hubungi admin.</option>
                                 @endforelse

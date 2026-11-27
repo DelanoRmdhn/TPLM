@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * PB-09: topik bisa dibuat dan diurutkan.
+ * PB-09: topik bisa dibuat, diurutkan, diganti nama, dan dihapus.
  */
 class TopicController extends Controller
 {
@@ -31,6 +31,31 @@ class TopicController extends Controller
         ]);
 
         return back()->with('status', "Topik {$data['name']} ditambahkan.");
+    }
+
+    public function update(Request $request, Classroom $classroom, Topic $topic): RedirectResponse
+    {
+        Gate::authorize('manage', $classroom);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+        ], [
+            'name.required' => 'Nama topik wajib diisi.',
+        ]);
+
+        $topic->update(['name' => $data['name']]);
+
+        return back()->with('status', 'Nama topik diubah.');
+    }
+
+    /** Tugas dan materi di topik ini tidak ikut terhapus, pindah ke "Tanpa topik". */
+    public function destroy(Classroom $classroom, Topic $topic): RedirectResponse
+    {
+        Gate::authorize('manage', $classroom);
+
+        $topic->delete();
+
+        return back()->with('status', "Topik {$topic->name} dihapus. Tugas dan materinya pindah ke Tanpa topik.");
     }
 
     /** Naikkan/turunkan topik satu tingkat. */

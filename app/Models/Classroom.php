@@ -3,16 +3,52 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['teacher_id', 'name', 'subject', 'rombel_id', 'academic_year'])]
+#[Fillable(['teacher_id', 'name', 'subject_id', 'rombel_id', 'academic_year', 'archived_at'])]
 class Classroom extends Model
 {
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'archived_at' => 'datetime',
+        ];
+    }
+
+    /** Mata pelajaran kelas (dikelola admin). */
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class);
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+    /** Kelas yang masih berjalan (belum diarsipkan). */
+    #[Scope]
+    protected function notArchived(Builder $query): void
+    {
+        $query->whereNull('archived_at');
+    }
+
+    /** Sudah ada tugas yang diserahkan siswa atau sudah dinilai: kelas tidak boleh dihapus, cukup diarsipkan. */
+    public function hasStudentWork(): bool
+    {
+        $assignmentIds = $this->assignments()->select('id');
+
+        return Submission::whereIn('assignment_id', $assignmentIds)->whereNotNull('submitted_at')->exists()
+            || Grade::whereIn('assignment_id', $assignmentIds)->exists();
+    }
 
     /** Guru pembuat kelas. */
     public function teacher(): BelongsTo

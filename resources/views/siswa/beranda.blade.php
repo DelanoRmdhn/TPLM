@@ -56,7 +56,7 @@
                 </h2>
 
                 <p class="mt-2 text-sm leading-5 text-slate-700">
-                    {{ $nearest->assignment->classroom->subject }} · {{ $nearest->dueLabel }}
+                    {{ $nearest->assignment->classroom->subject->name }} · {{ $nearest->dueLabel }}
                 </p>
 
                 <a href="{{ route('kelas.tugas.show', [$nearest->assignment->classroom_id, $nearest->assignment]) }}"
@@ -121,7 +121,7 @@
                             <div class="min-w-0 flex-1">
                                 <h3 class="font-bold">{{ $kelas->name }}</h3>
                                 <p class="mt-1 text-sm text-slate-600">
-                                    {{ $kelas->subject }} · {{ $kelas->teacher->name }}
+                                    {{ $kelas->subject->name }} · {{ $kelas->teacher->name }}
                                 </p>
                                 @if ($belum = $pendingPerClass->get($kelas->id))
                                     <p class="mt-1 text-xs font-semibold text-orange-700">

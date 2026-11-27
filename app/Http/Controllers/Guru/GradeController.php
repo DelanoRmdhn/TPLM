@@ -19,7 +19,7 @@ class GradeController extends Controller
 {
     public function edit(Classroom $classroom, Assignment $assignment, User $student): View
     {
-        $this->authorizeStudent($classroom, $assignment, $student);
+        $this->authorizeStudent($classroom, $assignment, $student, 'own');
 
         $submission = $assignment->submissions()->where('student_id', $student->id)->with('files')->first();
         $submission?->setRelation('assignment', $assignment);
@@ -32,12 +32,13 @@ class GradeController extends Controller
             'submission' => $submission,
             'grade' => $grade,
             'status' => AssignmentStatus::for($assignment, $submission, $grade),
+            'canManage' => Gate::allows('manage', $classroom),
         ]);
     }
 
     public function update(Request $request, Classroom $classroom, Assignment $assignment, User $student): RedirectResponse
     {
-        $this->authorizeStudent($classroom, $assignment, $student);
+        $this->authorizeStudent($classroom, $assignment, $student, 'manage');
 
         $data = $request->validate([
             'score' => ['required', 'integer', 'min:0', 'max:'.$assignment->max_score],
@@ -69,11 +70,14 @@ class GradeController extends Controller
             : redirect()->route('kelas.tugas.show', [$classroom, $assignment])->with('status', $message.' Semua pengumpulan sudah dinilai.');
     }
 
-    /** Hanya guru pengajar; tugas harus milik kelas ini dan siswa harus anggota kelas. */
-    private function authorizeStudent(Classroom $classroom, Assignment $assignment, User $student): void
+    /**
+     * Hanya guru pengajar; tugas harus milik kelas ini dan siswa harus anggota kelas.
+     * Kelas yang diarsipkan: pengumpulan dan nilai bisa dilihat ('own'), tapi tidak bisa diubah ('manage').
+     */
+    private function authorizeStudent(Classroom $classroom, Assignment $assignment, User $student, string $ability): void
     {
         abort_unless($assignment->classroom_id === $classroom->id, 404);
-        Gate::authorize('manage', $classroom);
+        Gate::authorize($ability, $classroom);
         abort_unless($classroom->hasStudent($student), 404);
     }
 }

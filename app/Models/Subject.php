@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 /**
- * Mata pelajaran, dikelola admin. Kelas menyimpan nama mapelnya (classrooms.subject),
- * jadi kalau admin mengganti nama, kelas yang memakai nama lama ikut diganti.
+ * Mata pelajaran, dikelola admin. Kelas menunjuk ke mapel lewat classrooms.subject_id,
+ * jadi kalau admin mengganti nama, semua kelas langsung memakai nama baru.
  */
 #[Fillable(['name'])]
 class Subject extends Model
@@ -19,8 +20,8 @@ class Subject extends Model
         return static::query()->orderBy('id')->pluck('name');
     }
 
-    public function classroomsCount(): int
+    public function classrooms(): HasMany
     {
-        return Classroom::where('subject', $this->name)->count();
+        return $this->hasMany(Classroom::class);
     }
 }

@@ -25,8 +25,14 @@ class ClassroomPolicy
         return false;
     }
 
-    /** Ubah kelas, tambah rombel, buat materi/tugas. */
+    /** Ubah kelas, tambah rombel, buat materi/tugas, beri nilai. Kelas yang diarsipkan hanya bisa dilihat. */
     public function manage(User $user, Classroom $classroom): bool
+    {
+        return $this->own($user, $classroom) && ! $classroom->isArchived();
+    }
+
+    /** Arsipkan, pulihkan, atau hapus kelas: guru pengajar, juga saat kelas diarsipkan. */
+    public function own(User $user, Classroom $classroom): bool
     {
         return $user->isGuru() && $classroom->isTaughtBy($user);
     }

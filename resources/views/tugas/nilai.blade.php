@@ -38,6 +38,11 @@
     </section>
 
     {{-- PB-15: nilai 0 sampai nilai maksimal + umpan balik teks --}}
+    @if (! $canManage)
+        <p class="rounded-card border border-border bg-white p-4 text-text-muted">
+            Kelas ini diarsipkan. Nilai: {{ $grade ? $grade->score.' / '.$assignment->max_score : 'belum dinilai' }}
+        </p>
+    @else
     <form method="POST" action="{{ route('kelas.tugas.nilai.update', [$classroom, $assignment, $student]) }}"
         class="space-y-3 rounded-card border border-border bg-white p-4">
         @csrf
@@ -59,5 +64,6 @@
             {{ $grade ? 'Perbarui Nilai' : 'Simpan Nilai' }}
         </button>
     </form>
+    @endif
 
 @endsection

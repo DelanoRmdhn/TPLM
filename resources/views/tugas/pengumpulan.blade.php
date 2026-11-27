@@ -16,7 +16,9 @@
             <p class="whitespace-pre-line">{{ $assignment->instructions }}</p>
         @endif
         @include('tugas._lampiran', ['attachments' => $assignment->attachments])
-        <a href="{{ route('kelas.tugas.edit', [$classroom, $assignment]) }}" class="flex h-12 items-center justify-center rounded-control border border-brand font-semibold text-brand">Ubah Tugas</a>
+        @if ($canManage)
+            <a href="{{ route('kelas.tugas.edit', [$classroom, $assignment]) }}" class="flex h-12 items-center justify-center rounded-control border border-brand font-semibold text-brand">Ubah Tugas</a>
+        @endif
     </section>
 
     {{-- PB-14: daftar terbagi dua beserta jumlahnya --}}

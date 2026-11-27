@@ -8,11 +8,34 @@
     <a href="{{ route(auth()->user()->homeRoute()) }}" class="inline-flex h-12 items-center text-brand underline">← Beranda</a>
 
     <section class="rounded-card border border-border bg-white p-4">
-        <p class="text-caption text-text-muted">{{ $classroom->subject }} · {{ $classroom->academic_year }}</p>
+        <p class="text-caption text-text-muted">{{ $classroom->subject->name }} · {{ $classroom->academic_year }}</p>
         <h1 class="text-h1 font-bold">{{ $classroom->name }}</h1>
         <p class="mt-1 text-text-muted">{{ $classroom->teacher->name }}</p>
         <a href="{{ route('kelas.anggota', $classroom) }}" class="mt-3 flex h-12 items-center justify-center rounded-control border border-border">Lihat Anggota</a>
+        @if ($canManage)
+            <a href="{{ route('kelas.edit', $classroom) }}" class="mt-2 flex h-12 items-center justify-center rounded-control border border-border">Ubah Kelas</a>
+        @endif
     </section>
+
+    @if ($classroom->isArchived())
+        <section class="space-y-3 rounded-card border border-amber-200 bg-amber-50 p-4">
+            <p class="text-amber-800">Kelas ini diarsipkan pada {{ $classroom->archived_at->translatedFormat('j F Y') }}. Isinya hanya bisa dilihat.</p>
+            @if ($canOwn)
+                <div class="grid grid-cols-2 gap-3">
+                    <form method="POST" action="{{ route('kelas.restore', $classroom) }}">
+                        @csrf
+                        <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">Pulihkan Kelas</button>
+                    </form>
+                    <form method="POST" action="{{ route('kelas.destroy', $classroom) }}"
+                        onsubmit="return confirm(@js('Hapus kelas '.$classroom->name.' beserta semua materi dan tugasnya? Tidak bisa dibatalkan.'))">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="h-12 w-full rounded-control border border-red-300 font-semibold text-danger">Hapus Kelas</button>
+                    </form>
+                </div>
+            @endif
+        </section>
+    @endif
 
     @if ($canManage)
         <div class="grid grid-cols-2 gap-3">
@@ -35,7 +58,7 @@
                 <h2 class="font-bold">{{ $topic->name }}</h2>
 
                 @if ($canManage)
-                    <div class="flex gap-1">
+                    <div class="flex shrink-0 gap-1">
                         @unless ($loop->first)
                             <form method="POST" action="{{ route('kelas.topik.move', [$classroom, $topic, 'naik']) }}">
                                 @csrf
@@ -51,6 +74,26 @@
                     </div>
                 @endif
             </div>
+
+            @if ($canManage)
+                <details class="mt-2">
+                    <summary class="flex h-12 cursor-pointer items-center text-caption text-brand">Ubah nama / hapus topik</summary>
+                    <form method="POST" action="{{ route('kelas.topik.update', [$classroom, $topic]) }}" class="mt-2 flex gap-2">
+                        @csrf
+                        @method('PUT')
+                        <label for="topik-{{ $topic->id }}" class="sr-only">Nama topik</label>
+                        <input id="topik-{{ $topic->id }}" name="name" required maxlength="100" value="{{ $topic->name }}"
+                            class="h-12 min-w-0 flex-1 rounded-control border border-border px-3">
+                        <button type="submit" class="h-12 shrink-0 rounded-control border border-brand px-4 font-semibold text-brand">Simpan</button>
+                    </form>
+                    <form method="POST" action="{{ route('kelas.topik.destroy', [$classroom, $topic]) }}" class="mt-2"
+                        onsubmit="return confirm(@js('Hapus topik '.$topic->name.'? Tugas dan materinya pindah ke Tanpa topik.'))">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="h-12 w-full rounded-control border border-red-300 font-semibold text-danger">Hapus Topik</button>
+                    </form>
+                </details>
+            @endif
 
             @include('kelas._materi-list', ['materials' => $topic->materials, 'assignments' => $topic->assignments])
         </section>

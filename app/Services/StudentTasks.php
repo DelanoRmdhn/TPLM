@@ -13,20 +13,23 @@ use Illuminate\Support\Collection;
 /**
  * Semua tugas dari kelas yang diikuti siswa, beserta status masing-masing.
  * Dipakai beranda siswa, Tugas Saya (FR-26, PB-17), dan Nilai Saya (FR-25, PB-16).
+ * Tugas dari kelas yang diarsipkan hanya ikut kalau diminta (Nilai Saya).
  */
 class StudentTasks
 {
     /**
      * @return Collection<int, object{assignment: Assignment, submission: ?Submission, grade: ?Grade, status: AssignmentStatus, done: bool, group: string, dueLabel: string}>
      */
-    public function for(User $student): Collection
+    public function for(User $student, bool $includeArchived = false): Collection
     {
-        $classroomIds = $student->classrooms()->pluck('classrooms.id');
+        $classroomIds = $student->classrooms()
+            ->when(! $includeArchived, fn ($query) => $query->whereNull('classrooms.archived_at'))
+            ->pluck('classrooms.id');
 
         return Assignment::query()
             ->whereIn('classroom_id', $classroomIds)
             ->with([
-                'classroom',
+                'classroom.subject',
                 'submissions' => fn ($q) => $q->where('student_id', $student->id),
                 'grades' => fn ($q) => $q->where('student_id', $student->id),
             ])

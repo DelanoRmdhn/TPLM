@@ -8,7 +8,7 @@
     <a href="{{ route('kelas.show', $classroom) }}" class="inline-flex h-12 items-center text-brand underline">← Kembali ke kelas</a>
 
     <section class="rounded-card border border-border bg-white p-4">
-        <p class="text-caption text-text-muted">{{ $classroom->subject }} · {{ $classroom->academic_year }}</p>
+        <p class="text-caption text-text-muted">{{ $classroom->subject->name }} · {{ $classroom->academic_year }}</p>
         <h1 class="text-h1 font-bold">{{ $classroom->name }}</h1>
     </section>
 
@@ -26,6 +26,15 @@
             <p class="text-caption text-text-muted">Semua siswa rombel itu masuk sekaligus. Yang sudah ada tidak dobel.</p>
             <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">Tambahkan</button>
         </form>
+
+        <form method="POST" action="{{ route('kelas.anggota.store', $classroom) }}"
+            class="space-y-3 rounded-card border border-border bg-white p-4">
+            @csrf
+            <label for="nisn" class="block font-semibold">Tambah satu siswa</label>
+            <input id="nisn" name="nisn" required inputmode="numeric" maxlength="50" value="{{ old('nisn') }}" placeholder="NISN siswa"
+                class="h-12 w-full rounded-control border border-border px-3">
+            <button type="submit" class="h-12 w-full rounded-control border border-brand font-semibold text-brand">Tambahkan Siswa</button>
+        </form>
     @endif
 
     <section class="rounded-card border border-border bg-white p-4">
@@ -42,7 +51,15 @@
                     <span>{{ $student->name }}</span>
                     {{-- NISN hanya untuk guru (NFR-10) --}}
                     @if ($canManage)
-                        <span class="text-caption text-text-muted">{{ $student->username }} · {{ $student->rombel?->name }}</span>
+                        <span class="flex items-center gap-2">
+                            <span class="text-caption text-text-muted">{{ $student->username }} · {{ $student->rombel?->name }}</span>
+                            <form method="POST" action="{{ route('kelas.anggota.destroy', [$classroom, $student]) }}"
+                                onsubmit="return confirm(@js('Keluarkan '.$student->name.' dari kelas?'))">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" aria-label="Keluarkan {{ $student->name }}" class="h-12 rounded-control border border-red-300 px-3 text-caption font-semibold text-danger">Keluarkan</button>
+                            </form>
+                        </span>
                     @endif
                 </li>
             @empty

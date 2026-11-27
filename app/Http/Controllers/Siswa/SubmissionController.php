@@ -17,12 +17,14 @@ use Illuminate\Validation\ValidationException;
 /**
  * M05, FR-18, PB-12: siswa mengumpulkan foto dari kamera/galeri, file, atau teks.
  * Foto dikompres di HP sebelum diunggah (lihat tugas/show.blade.php), server menolak > 10 MB.
+ * Selama belum dinilai, siswa bisa membatalkan pengumpulan lalu mengumpulkan ulang.
  */
 class SubmissionController extends Controller
 {
     public function store(Request $request, Classroom $classroom, Assignment $assignment): RedirectResponse
     {
         Gate::authorize('view', $classroom);
+        $this->ensureNotArchived($classroom);
         $student = $request->user();
 
         $extensions = implode(',', SubmissionFile::ALLOWED_EXTENSIONS);
@@ -85,5 +87,40 @@ class SubmissionController extends Controller
         return back()->with('status', $assignment->isPastDue()
             ? 'Tugas diserahkan (terlambat). Guru tetap bisa menilainya.'
             : 'Tugas berhasil diserahkan!');
+    }
+
+    /** Tarik kembali pengumpulan: status kembali "Belum dikerjakan"/"Terlambat", file yang dikirim dihapus. */
+    public function cancel(Request $request, Classroom $classroom, Assignment $assignment): RedirectResponse
+    {
+        Gate::authorize('view', $classroom);
+        $this->ensureNotArchived($classroom);
+        $student = $request->user();
+
+        if ($assignment->grades()->where('student_id', $student->id)->exists()) {
+            throw ValidationException::withMessages(['files' => 'Tugas ini sudah dinilai, jadi tidak bisa dibatalkan.']);
+        }
+
+        $submission = $assignment->submissions()->where('student_id', $student->id)->first();
+        if (! $submission?->isSubmitted()) {
+            throw ValidationException::withMessages(['files' => 'Tugas ini belum kamu serahkan.']);
+        }
+
+        $paths = $submission->files()->pluck('path')->all();
+
+        DB::transaction(function () use ($submission) {
+            $submission->files()->delete();
+            $submission->update(['body' => null, 'submitted_at' => null]);
+        });
+
+        Storage::disk('local')->delete($paths);
+
+        return back()->with('status', 'Pengumpulan dibatalkan. Kamu bisa mengumpulkan ulang.');
+    }
+
+    private function ensureNotArchived(Classroom $classroom): void
+    {
+        if ($classroom->isArchived()) {
+            throw ValidationException::withMessages(['files' => 'Kelas ini sudah diarsipkan.']);
+        }
     }
 }

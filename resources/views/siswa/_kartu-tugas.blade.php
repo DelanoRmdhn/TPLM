@@ -28,7 +28,7 @@
         </h3>
 
         <p class="mt-2 text-sm leading-5 text-slate-600">
-            {{ $row->assignment->classroom->subject }} ·
+            {{ $row->assignment->classroom->subject->name }} ·
             @if ($row->grade)
                 Nilai {{ $row->grade->score }}/{{ $row->assignment->max_score }}
             @elseif ($row->submission?->isSubmitted())

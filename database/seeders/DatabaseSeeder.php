@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Attachment;
 use App\Models\Classroom;
 use App\Models\Rombel;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -54,7 +55,7 @@ class DatabaseSeeder extends Seeder
         // Satu kelas contoh, berisi semua siswa rombel 4A
         $kelas = $guru->teachingClassrooms()->create([
             'name' => 'Matematika 4A',
-            'subject' => 'Matematika',
+            'subject_id' => Subject::where('name', 'Matematika')->value('id'),
             'rombel_id' => $rombel4A->id,
             'academic_year' => Classroom::academicYearOptions()[0],
         ]);

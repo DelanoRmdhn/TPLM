@@ -59,15 +59,15 @@ class SubjectTest extends TestCase
     public function test_ganti_nama_mapel_ikut_mengganti_kelas(): void
     {
         $ipas = Subject::where('name', 'IPAS')->first();
-        $kelas = Classroom::factory()->create(['subject' => 'IPAS']);
-        $lain = Classroom::factory()->create(['subject' => 'Matematika']);
+        $kelas = Classroom::factory()->create(['subject_id' => $ipas->id]);
+        $lain = Classroom::factory()->create();
 
         $this->actingAs($this->admin)->put("/admin/mapel/{$ipas->id}", ['name' => 'IPA dan IPS'])
             ->assertRedirect('/admin/mapel');
 
         $this->assertSame('IPA dan IPS', $ipas->fresh()->name);
-        $this->assertSame('IPA dan IPS', $kelas->fresh()->subject);
-        $this->assertSame('Matematika', $lain->fresh()->subject);
+        $this->assertSame('IPA dan IPS', $kelas->fresh()->subject->name);
+        $this->assertSame('Matematika', $lain->fresh()->subject->name);
     }
 
     public function test_simpan_tanpa_ganti_nama_tidak_dianggap_dobel(): void
@@ -91,7 +91,7 @@ class SubjectTest extends TestCase
     public function test_mapel_yang_dipakai_kelas_tidak_bisa_dihapus(): void
     {
         $mtk = Subject::where('name', 'Matematika')->first();
-        Classroom::factory()->create(['subject' => 'Matematika']);
+        Classroom::factory()->create(['subject_id' => $mtk->id]);
 
         $this->actingAs($this->admin)->delete("/admin/mapel/{$mtk->id}")
             ->assertSessionHasErrors(['name' => 'Matematika dipakai di 1 kelas, jadi tidak bisa dihapus. Ubah namanya saja kalau perlu.']);
@@ -129,7 +129,7 @@ class SubjectTest extends TestCase
 
         $this->actingAs($guru)->post('/guru/kelas', [
             'nama_kelas' => 'Kimia 4A',
-            'mata_pelajaran' => 'Kimia',
+            'mata_pelajaran' => 9999,
             'rombel' => $rombel->id,
             'tahun_ajaran' => Classroom::academicYearOptions()[0],
         ])->assertSessionHasErrors(['mata_pelajaran' => 'Mata pelajaran tidak ada di daftar.']);

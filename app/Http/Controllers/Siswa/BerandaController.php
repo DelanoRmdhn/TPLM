@@ -18,7 +18,7 @@ class BerandaController extends Controller
         $pending = $tasks->for($user)->reject->done->values();
 
         return view('siswa.beranda', [
-            'classrooms' => $user->classrooms()->with('teacher')->orderBy('name')->get(),
+            'classrooms' => $user->classrooms()->notArchived()->with(['teacher', 'subject'])->orderBy('name')->get(),
             // Tenggat terdekat yang belum lewat
             'nearest' => $pending->first(fn ($row) => ! $row->assignment->isPastDue()),
             // "Belum dikerjakan": maks 3, termasuk yang terlambat

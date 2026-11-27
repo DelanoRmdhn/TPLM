@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Classroom;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -19,14 +17,8 @@ class SubjectController extends Controller
 {
     public function index(): View
     {
-        $usage = Classroom::query()
-            ->selectRaw('subject, count(*) as total')
-            ->groupBy('subject')
-            ->pluck('total', 'subject');
-
         return view('admin.mapel.index', [
-            'subjects' => Subject::query()->orderBy('id')->get(),
-            'usage' => $usage,
+            'subjects' => Subject::query()->withCount('classrooms')->orderBy('id')->get(),
         ]);
     }
 
@@ -44,19 +36,14 @@ class SubjectController extends Controller
         $data = $this->validated($request, $subject);
         $old = $subject->name;
 
-        DB::transaction(function () use ($subject, $old, $data) {
-            $subject->update(['name' => $data['name']]);
-
-            // Kelas yang memakai nama lama ikut diganti
-            Classroom::where('subject', $old)->update(['subject' => $data['name']]);
-        });
+        $subject->update(['name' => $data['name']]);
 
         return redirect()->route('admin.mapel.index')->with('status', "Mata pelajaran {$old} diubah jadi {$data['name']}.");
     }
 
     public function destroy(Subject $subject): RedirectResponse
     {
-        $used = $subject->classroomsCount();
+        $used = $subject->classrooms()->count();
 
         if ($used > 0) {
             return redirect()->route('admin.mapel.index')

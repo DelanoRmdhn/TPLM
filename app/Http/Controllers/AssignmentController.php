@@ -20,7 +20,7 @@ class AssignmentController extends Controller
 
         $assignment->load(['attachments', 'topic']);
 
-        return Gate::allows('manage', $classroom)
+        return Gate::allows('own', $classroom)
             ? $this->forTeacher($classroom, $assignment)
             : $this->forStudent($request, $classroom, $assignment);
     }
@@ -51,7 +51,8 @@ class AssignmentController extends Controller
             'assignment' => $assignment,
             'sudah' => $sudah->values(),
             'belum' => $belum->values(),
-            'canDelete' => $submissions->isEmpty() && ! $assignment->hasSubmissions(),
+            'canManage' => Gate::allows('manage', $classroom),
+            'canDelete' => Gate::allows('manage', $classroom) && $submissions->isEmpty() && ! $assignment->hasSubmissions(),
         ]);
     }
 

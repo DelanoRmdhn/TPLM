@@ -429,4 +429,77 @@ class AssignmentTest extends TestCase
         Grade::create(['assignment_id' => $tugas->id, 'student_id' => $this->ani->id, 'score' => 80]);
         $this->assertSame(AssignmentStatus::Dinilai, $tugas->statusFor($this->ani));
     }
+
+    // ---------- Batalkan pengumpulan ----------
+
+    public function test_siswa_batalkan_pengumpulan_lalu_kumpul_ulang(): void
+    {
+        $tugas = $this->tugas();
+        $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), [
+            'files' => [UploadedFile::fake()->image('salah.jpg')], 'body' => 'Jawaban lama',
+        ]);
+        $path = SubmissionFile::first()->path;
+
+        $this->actingAs($this->ani)->get($this->url($tugas))->assertSee('Batalkan Pengumpulan');
+
+        $this->actingAs($this->ani)->post($this->url($tugas, '/batal'))
+            ->assertSessionHas('status', 'Pengumpulan dibatalkan. Kamu bisa mengumpulkan ulang.');
+
+        $this->assertSame(AssignmentStatus::BelumDikerjakan, $tugas->statusFor($this->ani));
+        $this->assertSame(0, SubmissionFile::count());
+        Storage::disk('local')->assertMissing($path);
+
+        $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), ['files' => [UploadedFile::fake()->image('benar.jpg')]])
+            ->assertSessionHas('status', 'Tugas berhasil diserahkan!');
+        $this->assertSame(1, SubmissionFile::count());
+        $this->assertNull(Submission::first()->body);
+    }
+
+    public function test_tidak_bisa_batalkan_yang_sudah_dinilai_atau_belum_diserahkan(): void
+    {
+        $tugas = $this->tugas();
+
+        $this->actingAs($this->ani)->post($this->url($tugas, '/batal'))
+            ->assertSessionHasErrors(['files' => 'Tugas ini belum kamu serahkan.']);
+
+        $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), ['files' => [UploadedFile::fake()->image('a.jpg')]]);
+        Grade::create(['assignment_id' => $tugas->id, 'student_id' => $this->ani->id, 'score' => 80]);
+
+        $this->actingAs($this->ani)->post($this->url($tugas, '/batal'))
+            ->assertSessionHasErrors(['files' => 'Tugas ini sudah dinilai, jadi tidak bisa dibatalkan.']);
+        $this->assertSame(AssignmentStatus::Dinilai, $tugas->statusFor($this->ani));
+        $this->assertSame(1, SubmissionFile::count());
+    }
+
+    public function test_batalkan_hanya_mengenai_pengumpulan_sendiri(): void
+    {
+        $tugas = $this->tugas();
+        $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), ['files' => [UploadedFile::fake()->image('a.jpg')]]);
+
+        $this->actingAs($this->budi)->post($this->url($tugas, '/batal'))->assertSessionHasErrors('files');
+        $this->actingAs($this->guru)->post($this->url($tugas, '/batal'))->assertForbidden();
+
+        $this->assertSame(AssignmentStatus::Diserahkan, $tugas->statusFor($this->ani));
+    }
+
+    public function test_kelas_diarsipkan_tidak_bisa_kumpul_tapi_nilai_tetap_terlihat(): void
+    {
+        $tugas = $this->tugas(['title' => 'Latihan 1']);
+        $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), ['files' => [UploadedFile::fake()->image('a.jpg')]]);
+        Grade::create(['assignment_id' => $tugas->id, 'student_id' => $this->ani->id, 'score' => 85]);
+        $lain = $this->tugas();
+        $this->kelas->update(['archived_at' => now()]);
+
+        $this->actingAs($this->budi)->post($this->url($lain, '/kumpul'), ['files' => [UploadedFile::fake()->image('b.jpg')]])
+            ->assertSessionHasErrors(['files' => 'Kelas ini sudah diarsipkan.']);
+        $this->assertSame(1, Submission::count());
+
+        // Nilai Saya tetap menampilkan nilai dari kelas yang diarsipkan
+        $this->actingAs($this->ani)->get('/siswa/nilai')->assertSee('Latihan 1')->assertSee('85');
+
+        // Guru masih bisa melihat pengumpulan, tapi tidak bisa mengubah nilai
+        $this->actingAs($this->guru)->get($this->url($tugas, "/siswa/{$this->ani->id}"))->assertOk()->assertSee('Kelas ini diarsipkan');
+        $this->actingAs($this->guru)->put($this->url($tugas, "/siswa/{$this->ani->id}"), ['score' => 100])->assertForbidden();
+        $this->assertSame(85, Grade::first()->score);
+    }
 }

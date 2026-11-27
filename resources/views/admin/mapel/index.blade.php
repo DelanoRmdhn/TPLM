@@ -25,7 +25,7 @@
 
         <ul class="mt-3 divide-y divide-border">
             @forelse ($subjects as $subject)
-                @php($used = (int) ($usage[$subject->name] ?? 0))
+                @php($used = $subject->classrooms_count)
                 <li class="space-y-2 py-3">
                     <form method="POST" action="{{ route('admin.mapel.update', $subject) }}" class="flex gap-2">
                         @csrf

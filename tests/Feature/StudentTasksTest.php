@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\Classroom;
 use App\Models\Grade;
 use App\Models\Rombel;
+use App\Models\Subject;
 use App\Models\Submission;
 use App\Models\User;
 use App\Services\StudentTasks;
@@ -35,7 +36,7 @@ class StudentTasksTest extends TestCase
         $guru = User::factory()->create(['role' => Role::Guru]);
         $this->ani = User::factory()->create(['role' => Role::Siswa, 'rombel_id' => $rombel->id]);
         $this->budi = User::factory()->create(['role' => Role::Siswa, 'rombel_id' => $rombel->id]);
-        $this->mtk = Classroom::factory()->create(['teacher_id' => $guru->id, 'name' => 'Matematika 4A', 'subject' => 'Matematika']);
+        $this->mtk = Classroom::factory()->create(['teacher_id' => $guru->id, 'name' => 'Matematika 4A', 'subject_id' => Subject::where('name', 'Matematika')->value('id')]);
         $this->mtk->addRombel($rombel);
     }
 

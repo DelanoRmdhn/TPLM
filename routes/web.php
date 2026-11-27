@@ -90,14 +90,26 @@ Route::middleware('auth')->group(function () {
         // M05: siswa kumpul tugas
         Route::middleware('role:siswa')->scopeBindings()->group(function () {
             Route::post('/kelas/{classroom}/tugas/{assignment}/kumpul', [SubmissionController::class, 'store'])->name('kelas.tugas.kumpul');
+            Route::post('/kelas/{classroom}/tugas/{assignment}/batal', [SubmissionController::class, 'cancel'])->name('kelas.tugas.batal');
         });
 
         // Kelola kelas: hanya guru pengajar
         Route::middleware('role:guru')->scopeBindings()->group(function () {
+            // Ubah, arsipkan, pulihkan, hapus kelas
+            Route::get('/kelas/{classroom}/ubah', [ClassroomController::class, 'edit'])->name('kelas.edit');
+            Route::put('/kelas/{classroom}', [ClassroomController::class, 'update'])->name('kelas.update');
+            Route::delete('/kelas/{classroom}', [ClassroomController::class, 'destroy'])->name('kelas.destroy');
+            Route::post('/kelas/{classroom}/arsip', [ClassroomController::class, 'archive'])->name('kelas.archive');
+            Route::post('/kelas/{classroom}/pulihkan', [ClassroomController::class, 'restore'])->name('kelas.restore');
+
             Route::post('/kelas/{classroom}/anggota/rombel', [ClassroomMemberController::class, 'addRombel'])->name('kelas.anggota.rombel');
+            Route::post('/kelas/{classroom}/anggota', [ClassroomMemberController::class, 'store'])->name('kelas.anggota.store');
+            Route::delete('/kelas/{classroom}/anggota/{student}', [ClassroomMemberController::class, 'destroy'])->name('kelas.anggota.destroy');
 
             // PB-09: topik
             Route::post('/kelas/{classroom}/topik', [TopicController::class, 'store'])->name('kelas.topik.store');
+            Route::put('/kelas/{classroom}/topik/{topic}', [TopicController::class, 'update'])->name('kelas.topik.update');
+            Route::delete('/kelas/{classroom}/topik/{topic}', [TopicController::class, 'destroy'])->name('kelas.topik.destroy');
             Route::post('/kelas/{classroom}/topik/{topic}/{direction}', [TopicController::class, 'move'])
                 ->whereIn('direction', ['naik', 'turun'])->name('kelas.topik.move');
 
