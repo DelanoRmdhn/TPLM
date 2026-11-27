@@ -16,8 +16,9 @@ class SimpleXlsx
     /**
      * Buat isi file .xlsx dari array baris. Baris pertama ditebalkan (judul kolom).
      * Semua kolom diformat Teks supaya NISN/NIP tidak berubah jadi angka.
+     * Nilai bertipe int/float (di luar baris judul) ditulis sebagai sel angka.
      *
-     * @param  array<int, array<int, string|int|null>>  $rows
+     * @param  array<int, array<int, string|int|float|null>>  $rows
      */
     public static function write(array $rows, string $sheetName = 'Sheet1'): string
     {
@@ -29,6 +30,14 @@ class SimpleXlsx
             $cells = '';
             foreach (array_values($row) as $c => $value) {
                 $ref = self::columnLetter($c).($r + 1);
+
+                // Angka (int/float) disimpan sebagai angka supaya bisa dihitung di Excel, mis. nilai rekap
+                if ($r > 0 && (is_int($value) || is_float($value))) {
+                    $cells .= "<c r=\"{$ref}\" s=\"0\"><v>{$value}</v></c>";
+
+                    continue;
+                }
+
                 $text = htmlspecialchars((string) $value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
                 $cells .= "<c r=\"{$ref}\" t=\"inlineStr\" s=\"{$style}\"><is><t xml:space=\"preserve\">{$text}</t></is></c>";
             }

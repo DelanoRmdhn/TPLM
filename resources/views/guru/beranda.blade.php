@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.pwa-head')
     <title>Beranda Guru</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -171,7 +172,7 @@
         class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white">
         <div class="mx-auto grid h-[66px] w-full max-w-[390px] grid-cols-5 px-1">
 
-            <a href="#" aria-current="page"
+            <a href="{{ route('guru.beranda') }}" aria-current="page"
                 class="flex flex-col items-center justify-center gap-0.5 text-brand">
                 <span class="flex h-8 w-12 items-center justify-center rounded-full bg-blue-100">
                     <svg viewBox="0 0 24 24" class="size-6"
@@ -185,7 +186,7 @@
                 <span class="text-[11px] font-semibold">Beranda</span>
             </a>
 
-            <a href="#"
+            <a href="{{ route('guru.penilaian') }}"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"
@@ -197,7 +198,7 @@
                 <span class="text-[11px] font-medium">Penilaian</span>
             </a>
 
-            <a href="#"
+            <a href="{{ route('guru.rekap') }}"
                 class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"
@@ -207,14 +208,19 @@
                 <span class="text-[11px] font-medium">Rekap</span>
             </a>
 
-            <a href="#"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
+            <a href="{{ route('notifikasi.index') }}"
+                class="relative flex flex-col items-center justify-center gap-0.5 text-slate-600">
                 <svg viewBox="0 0 24 24" class="size-6"
                     fill="none" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
                     <path d="M10 21h4"/>
                 </svg>
+                @if ($unreadNotifications > 0)
+                    <span class="absolute top-2 left-1/2 ml-1 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                        {{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}<span class="sr-only"> belum dibaca</span>
+                    </span>
+                @endif
                 <span class="text-[11px] font-medium">Notifikasi</span>
             </a>
 

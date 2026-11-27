@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\Classroom;
 use App\Models\User;
+use App\Notifications\GradePublished;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -50,10 +51,14 @@ class GradeController extends Controller
             'score.max' => "Nilai paling besar {$assignment->max_score}.",
         ]);
 
-        $assignment->grades()->updateOrCreate(
+        $grade = $assignment->grades()->updateOrCreate(
             ['student_id' => $student->id],
             ['score' => $data['score'], 'feedback' => $data['feedback'] ?? null, 'graded_by' => $request->user()->id],
         );
+
+        if ($grade->wasRecentlyCreated || $grade->wasChanged(['score', 'feedback'])) {
+            $student->notify(new GradePublished($grade->setRelation('assignment', $assignment), updated: ! $grade->wasRecentlyCreated));
+        }
 
         // Lanjut ke pengumpulan berikutnya yang belum dinilai
         $next = $assignment->submissions()

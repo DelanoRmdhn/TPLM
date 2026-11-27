@@ -7,8 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\RegistrationSetting;
 use App\Models\Rombel;
 use App\Models\User;
+use App\Notifications\TeacherRegistered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -74,6 +76,13 @@ class RegisterController extends Controller
             'must_change_password' => false,
             'password' => $data['password'],
         ]);
+
+        if (! $user->is_active) {
+            Notification::send(
+                User::where('role', Role::Admin)->where('is_active', true)->get(),
+                new TeacherRegistered($user),
+            );
+        }
 
         return redirect()->route('register.success')->with('registered', [
             'name' => $user->name,

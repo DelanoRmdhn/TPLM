@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.pwa-head')
 
     <title>@yield('title') — SDN 002 Karangmulya</title>
 
@@ -20,6 +21,19 @@
                     <p class="truncate text-caption text-text-muted">{{ auth()->user()->name }} · {{ auth()->user()->role->label() }}</p>
                 </div>
                 <div class="flex shrink-0 gap-2">
+                    @if (! auth()->user()->must_change_password)
+                        <a href="{{ route('notifikasi.index') }}" aria-label="Notifikasi{{ $unreadNotifications > 0 ? ', '.$unreadNotifications.' belum dibaca' : '' }}"
+                            class="relative flex size-12 items-center justify-center rounded-control border border-border">
+                            <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                                <path d="M10 21h4"/>
+                            </svg>
+                            @if ($unreadNotifications > 0)
+                                <span class="absolute -top-1 -right-1 flex min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-bold text-white" aria-hidden="true">{{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}</span>
+                            @endif
+                        </a>
+                    @endif
                     <a href="{{ route('akun') }}" class="flex h-12 items-center rounded-control border border-border px-4 font-semibold">Akun</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

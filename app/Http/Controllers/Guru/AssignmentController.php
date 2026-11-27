@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\MaterialController;
 use App\Models\Assignment;
 use App\Models\Classroom;
+use App\Notifications\AssignmentPublished;
 use App\Services\AttachmentUploader;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -58,6 +60,11 @@ class AssignmentController extends Controller
             $uploader->cleanup();
             throw $e;
         }
+
+        Notification::send(
+            $classroom->students()->where('is_active', true)->get(),
+            new AssignmentPublished($assignment->setRelation('classroom', $classroom)),
+        );
 
         return redirect()->route('kelas.tugas.show', [$classroom, $assignment])
             ->with('status', 'Tugas berhasil diterbitkan.');

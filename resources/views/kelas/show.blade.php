@@ -12,6 +12,9 @@
         <h1 class="text-h1 font-bold">{{ $classroom->name }}</h1>
         <p class="mt-1 text-text-muted">{{ $classroom->teacher->name }}</p>
         <a href="{{ route('kelas.anggota', $classroom) }}" class="mt-3 flex h-12 items-center justify-center rounded-control border border-border">Lihat Anggota</a>
+        @if ($canOwn)
+            <a href="{{ route('kelas.rekap', $classroom) }}" class="mt-2 flex h-12 items-center justify-center rounded-control border border-border">Rekap Nilai</a>
+        @endif
         @if ($canManage)
             <a href="{{ route('kelas.edit', $classroom) }}" class="mt-2 flex h-12 items-center justify-center rounded-control border border-border">Ubah Kelas</a>
         @endif

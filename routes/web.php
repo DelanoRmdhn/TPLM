@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\ClassroomController as AdminClassroomController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\RegistrationSettingController;
 use App\Http\Controllers\Admin\RombelController;
@@ -16,8 +18,11 @@ use App\Http\Controllers\ClassroomPageController;
 use App\Http\Controllers\Guru\AssignmentController as GuruAssignmentController;
 use App\Http\Controllers\Guru\ClassroomController;
 use App\Http\Controllers\Guru\GradeController;
+use App\Http\Controllers\Guru\GradingController;
+use App\Http\Controllers\Guru\RecapController;
 use App\Http\Controllers\Guru\TopicController;
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Siswa\BerandaController as SiswaBerandaController;
 use App\Http\Controllers\Siswa\SubmissionController;
 use App\Http\Controllers\Siswa\TaskController;
@@ -52,6 +57,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/akun', [AccountSettingsController::class, 'show'])->name('akun');
         Route::put('/akun/kata-sandi', [AccountSettingsController::class, 'updatePassword'])->name('akun.password');
 
+        // Notifikasi (semua peran)
+        Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifikasi.index');
+        Route::post('/notifikasi/baca-semua', [NotificationController::class, 'readAll'])->name('notifikasi.read-all');
+        Route::post('/notifikasi/{id}/baca', [NotificationController::class, 'read'])->whereUuid('id')->name('notifikasi.read');
+
         // Siswa
         Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
             Route::get('/beranda', SiswaBerandaController::class)->name('beranda');
@@ -64,6 +74,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/beranda', [ClassroomController::class, 'index'])->name('beranda');
             Route::get('/buat-kelas', [ClassroomController::class, 'create'])->name('buat-kelas');
             Route::post('/kelas', [ClassroomController::class, 'store'])->name('kelas.store');
+
+            // Menu Penilaian & Rekap
+            Route::get('/penilaian', [GradingController::class, 'index'])->name('penilaian');
+            Route::get('/rekap', [RecapController::class, 'index'])->name('rekap');
         });
 
         // Kelas: guru pengajar & siswa anggota (dicek di ClassroomPolicy)
@@ -102,6 +116,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/kelas/{classroom}/arsip', [ClassroomController::class, 'archive'])->name('kelas.archive');
             Route::post('/kelas/{classroom}/pulihkan', [ClassroomController::class, 'restore'])->name('kelas.restore');
 
+            // Rekap nilai kelas + unduh Excel
+            Route::get('/kelas/{classroom}/rekap', [RecapController::class, 'show'])->name('kelas.rekap');
+            Route::get('/kelas/{classroom}/rekap/unduh', [RecapController::class, 'download'])->name('kelas.rekap.unduh');
+
             Route::post('/kelas/{classroom}/anggota/rombel', [ClassroomMemberController::class, 'addRombel'])->name('kelas.anggota.rombel');
             Route::post('/kelas/{classroom}/anggota', [ClassroomMemberController::class, 'store'])->name('kelas.anggota.store');
             Route::delete('/kelas/{classroom}/anggota/{student}', [ClassroomMemberController::class, 'destroy'])->name('kelas.anggota.destroy');
@@ -136,7 +154,11 @@ Route::middleware('auth')->group(function () {
 
         // Admin
         Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-            Route::redirect('/beranda', '/admin/akun')->name('beranda');
+            Route::get('/beranda', AdminDashboardController::class)->name('beranda');
+
+            // Daftar kelas + pindah guru pengajar
+            Route::get('/kelas', [AdminClassroomController::class, 'index'])->name('kelas.index');
+            Route::put('/kelas/{classroom}/guru', [AdminClassroomController::class, 'updateTeacher'])->name('kelas.guru');
 
             // M08, M08c, M08d: kelola akun
             Route::get('/akun', [AccountController::class, 'index'])->name('akun.index');

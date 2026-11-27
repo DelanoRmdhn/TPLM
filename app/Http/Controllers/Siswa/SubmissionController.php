@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\Classroom;
 use App\Models\SubmissionFile;
+use App\Notifications\SubmissionReceived;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +60,7 @@ class SubmissionController extends Controller
         $stored = [];
 
         try {
-            DB::transaction(function () use ($assignment, $student, $data, $files, $existing, &$stored) {
+            $submission = DB::transaction(function () use ($assignment, $student, $data, $files, $existing, &$stored) {
                 $submission = $existing ?? $assignment->submissions()->make(['student_id' => $student->id]);
                 $submission->fill(['body' => $data['body'] ?? null, 'submitted_at' => now()])->save();
 
@@ -78,11 +79,17 @@ class SubmissionController extends Controller
                         'size' => $file->getSize(),
                     ]);
                 }
+
+                return $submission;
             });
         } catch (\Throwable $e) {
             Storage::disk('local')->delete($stored);
             throw $e;
         }
+
+        $classroom->teacher->notify(new SubmissionReceived(
+            $submission->setRelation('assignment', $assignment)->setRelation('student', $student),
+        ));
 
         return back()->with('status', $assignment->isPastDue()
             ? 'Tugas diserahkan (terlambat). Guru tetap bisa menilainya.'

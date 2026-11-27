@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.pwa-head')
 
     <title>Login — SDN 002 Karangmulya</title>
 
@@ -193,6 +194,7 @@
         <div class="mt-4 text-center">
             <a
                 href="#"
+                data-install-app
                 class="mt-1.5 flex h-8 w-full items-center justify-center gap-1.5 rounded-control border border-brand bg-white text-[11px] font-semibold text-brand transition hover:bg-blue-50"
             >
                 <svg
@@ -208,6 +210,9 @@
 
                 Pasang Aplikasi di HP
             </a>
+            <p data-install-help class="mt-1.5 hidden text-[10px] leading-[1.4] text-text-muted">
+                Buka menu browser (⋮ atau tombol Bagikan), lalu pilih "Tambahkan ke Layar Utama".
+            </p>
         </div>
 
         <div class="mt-4 text-center">

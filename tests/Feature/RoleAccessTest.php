@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\Classroom;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -44,7 +45,7 @@ class RoleAccessTest extends TestCase
     {
         $admin = User::factory()->create(['role' => Role::Admin]);
 
-        $this->actingAs($admin)->get('/admin/beranda')->assertRedirect('/admin/akun');
+        $this->actingAs($admin)->get('/admin/beranda')->assertOk();
         $this->actingAs($admin)->get('/admin/akun')->assertOk();
 
         $this->actingAs($admin)->get('/siswa/beranda')->assertForbidden();
@@ -65,7 +66,7 @@ class RoleAccessTest extends TestCase
     public function test_403_dari_kelas_orang_lain_juga_ramah(): void
     {
         $guru = User::factory()->create(['role' => Role::Guru]);
-        $kelas = \App\Models\Classroom::factory()->create();
+        $kelas = Classroom::factory()->create();
 
         $this->actingAs($guru)->get("/kelas/{$kelas->id}")
             ->assertForbidden()

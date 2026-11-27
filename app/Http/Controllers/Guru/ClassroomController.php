@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Classroom;
 use App\Models\Rombel;
 use App\Models\Subject;
-use App\Models\Submission;
+use App\Services\UngradedSubmissions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ use Illuminate\View\View;
 class ClassroomController extends Controller
 {
     /** Beranda guru: daftar kelas yang diajar + pengumpulan yang perlu dinilai. */
-    public function index(Request $request): View
+    public function index(Request $request, UngradedSubmissions $ungradedSubmissions): View
     {
         [$archived, $classrooms] = $request->user()->teachingClassrooms()
             ->withCount('students')
@@ -28,19 +28,7 @@ class ClassroomController extends Controller
             ->get()
             ->partition->isArchived();
 
-        // Pengumpulan yang sudah diserahkan tapi belum dinilai, dari siswa yang masih anggota kelas
-        $ungraded = Submission::query()
-            ->whereNotNull('submitted_at')
-            ->join('assignments', 'assignments.id', '=', 'submissions.assignment_id')
-            ->whereIn('assignments.classroom_id', $classrooms->pluck('id'))
-            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('grades')
-                ->whereColumn('grades.assignment_id', 'submissions.assignment_id')
-                ->whereColumn('grades.student_id', 'submissions.student_id'))
-            ->whereExists(fn ($q) => $q->select(DB::raw(1))->from('classroom_members')
-                ->whereColumn('classroom_members.classroom_id', 'assignments.classroom_id')
-                ->whereColumn('classroom_members.user_id', 'submissions.student_id'))
-            ->orderBy('submissions.submitted_at')
-            ->get(['submissions.*', 'assignments.classroom_id']);
+        $ungraded = $ungradedSubmissions->for($request->user());
 
         return view('guru.beranda', [
             'classrooms' => $classrooms->values(),

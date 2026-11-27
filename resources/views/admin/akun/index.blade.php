@@ -5,6 +5,8 @@
 
 @section('content')
 
+    <a href="{{ route('admin.beranda') }}" class="inline-flex h-12 items-center text-brand underline">← Beranda</a>
+
     {{-- M08c: kata sandi sementara (tampil sekali) --}}
     @if ($temp = session('temporary_password'))
         <section class="rounded-card border border-amber-300 bg-amber-50 p-4">
