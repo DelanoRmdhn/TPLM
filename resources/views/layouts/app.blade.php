@@ -13,6 +13,7 @@
       topbar        "none": tanpa top bar (halaman punya sapaan sendiri, mis. beranda siswa)
                     "overlay": top bar transparan di atas hero berwarna
       hero          blok berwarna selebar layar di atas isi (dipakai bersama topbar "overlay")
+      width         "narrow": isi dibatasi lebar baca nyaman di desktop (halaman form)
       content       isi halaman
 --}}
 <!DOCTYPE html>
@@ -30,6 +31,7 @@
 @php
     $withNav = auth()->check() && ! auth()->user()->must_change_password;
     $topbar = trim($__env->yieldContent('topbar')) ?: 'default';
+    $desktopWidth = trim($__env->yieldContent('width')) === 'narrow' ? 'lg:max-w-3xl' : 'lg:max-w-6xl';
 @endphp
 
 <body class="min-h-dvh bg-background font-sans text-body text-text antialiased">
@@ -38,13 +40,21 @@
         Lompat ke isi halaman
     </a>
 
+    @if ($withNav)
+        <x-sidebar :unread="$unreadNotifications" />
+    @endif
+
+    {{-- Kolom konten; di layar lebar bergeser ke kanan sidebar --}}
+    <div @class(['relative', 'lg:pl-72' => $withNav])>
+
     @if ($topbar !== 'none')
         <header @class([
             'top-0 z-30 pt-safe',
             'sticky bg-background/90 backdrop-blur' => $topbar === 'default',
             'absolute inset-x-0 text-white' => $topbar === 'overlay',
+            'lg:left-72' => $topbar === 'overlay' && $withNav,
         ])>
-            <div class="mx-auto flex h-16 max-w-3xl items-center gap-3 px-safe">
+            <div class="mx-auto flex h-16 max-w-3xl items-center gap-3 px-safe lg:h-20 lg:px-10 {{ $desktopWidth }}">
                 @hasSection('back')
                     <a href="@yield('back')" aria-label="@yield('back-label', 'Kembali')"
                         @class([
@@ -57,9 +67,11 @@
                 @endif
 
                 @hasSection('header')
-                    <div class="min-w-0 flex-1">@yield('header')</div>
+                    {{-- Logo di top bar hanya di HP; di desktop logo sudah ada di sidebar --}}
+                    <div class="min-w-0 flex-1 lg:hidden">@yield('header')</div>
+                    <p class="hidden min-w-0 flex-1 truncate text-h1 font-extrabold lg:block">@yield('title')</p>
                 @else
-                    <p @class(['min-w-0 flex-1 truncate text-h2 font-extrabold', 'sr-only' => $topbar === 'overlay'])>@yield('title')</p>
+                    <p @class(['min-w-0 flex-1 truncate text-h2 font-extrabold lg:text-h1', 'sr-only' => $topbar === 'overlay'])>@yield('title')</p>
                 @endif
 
                 @yield('header-action')
@@ -70,15 +82,18 @@
     @yield('hero')
 
     <main id="konten" @class([
-        'relative mx-auto max-w-3xl space-y-4 px-safe',
+        'relative mx-auto max-w-3xl space-y-4 px-safe lg:space-y-6 lg:px-10',
+        $desktopWidth,
         'pt-2' => $topbar === 'default',
-        'pt-[max(20px,env(safe-area-inset-top))]' => $topbar === 'none',
+        'pt-[max(20px,env(safe-area-inset-top))] lg:pt-10' => $topbar === 'none',
         '-mt-8' => $topbar === 'overlay',
-        'pb-nav' => $withNav,
+        'pb-nav lg:pb-12' => $withNav,
         'pb-10' => ! $withNav,
     ])>
         @yield('content')
     </main>
+
+    </div>
 
     @if ($withNav)
         <x-bottom-nav :unread="$unreadNotifications" />

@@ -18,7 +18,7 @@
 
 {{-- Wadah toast --}}
 <div id="toast-region" aria-live="polite" aria-atomic="false"
-    class="pointer-events-none fixed inset-x-0 z-50 flex flex-col items-center gap-2 px-4 {{ $aboveNav ? 'bottom-above-nav' : 'bottom-[max(16px,env(safe-area-inset-bottom))]' }}">
+    class="pointer-events-none fixed inset-x-0 z-50 flex flex-col items-center gap-2 px-4 {{ $aboveNav ? 'bottom-above-nav lg:bottom-6 lg:pl-72' : 'bottom-[max(16px,env(safe-area-inset-bottom))]' }}">
     {{-- Halaman bisa menampilkan status sendiri (mis. login) dengan @section('inline-status', true) --}}
     @if (session('status') && $statusToast)
         <x-toast>{{ session('status') }}</x-toast>

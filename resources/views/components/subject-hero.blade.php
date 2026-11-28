@@ -4,14 +4,14 @@
 --}}
 @props(['subject'])
 
-<section {{ $attributes->class(['relative overflow-hidden pt-[calc(env(safe-area-inset-top,0px)+64px)] pb-14', $subject->solidClasses()]) }}>
+<section {{ $attributes->class(['relative overflow-hidden pt-[calc(env(safe-area-inset-top,0px)+64px)] pb-14 lg:pt-24 lg:pb-16', $subject->solidClasses()]) }}>
     <span class="pointer-events-none absolute -top-10 -left-10 size-40 rounded-full bg-white/10" aria-hidden="true"></span>
     <span class="pointer-events-none absolute right-6 bottom-6 size-16 rounded-full bg-white/10" aria-hidden="true"></span>
     <span class="pointer-events-none absolute -right-6 top-10 opacity-20" aria-hidden="true">
         <x-icon :name="$subject->iconName()" variant="fill" class="size-40" />
     </span>
 
-    <div class="relative mx-auto max-w-3xl px-safe">
+    <div class="relative mx-auto max-w-3xl px-safe lg:max-w-6xl lg:px-10">
         {{ $slot }}
     </div>
 </section>

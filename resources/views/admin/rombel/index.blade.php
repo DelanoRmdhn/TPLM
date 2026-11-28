@@ -26,7 +26,7 @@
             <p class="mt-0.5 text-caption text-text-muted">Pilihan ini dipakai di impor Excel, form akun, pendaftaran, dan form buat kelas.</p>
         </div>
 
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             @forelse ($rombels as $rombel)
                 @php($used = $rombel->students_count > 0 || $rombel->classrooms_count > 0)
                 <article class="space-y-2 rounded-card bg-surface p-4 shadow-card">

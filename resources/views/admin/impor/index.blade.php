@@ -2,6 +2,7 @@
 @extends('layouts.app')
 
 @section('title', 'Impor dari Excel')
+@section('width', 'narrow')
 @section('back', route('admin.akun.index'))
 @section('back-label', 'Kembali ke Kelola Akun')
 

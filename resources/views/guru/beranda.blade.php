@@ -45,9 +45,9 @@
     <section class="space-y-3 pt-2">
         <x-section-title icon="chalkboard-teacher">Kelas Saya</x-section-title>
 
-        <x-button :href="route('guru.buat-kelas')" variant="secondary" icon="plus-circle" block>Buat Kelas Baru</x-button>
+        <x-button :href="route('guru.buat-kelas')" variant="secondary" icon="plus-circle" block class="lg:w-fit lg:px-8">Buat Kelas Baru</x-button>
 
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             @forelse ($classrooms as $kelas)
                 <a href="{{ route('kelas.show', $kelas) }}"
                     class="flex items-center gap-4 rounded-card bg-surface p-4 shadow-card transition active:scale-[0.99]">
@@ -65,7 +65,7 @@
                     <x-icon name="caret-right" variant="bold" class="size-5 text-text-muted" />
                 </a>
             @empty
-                <x-card class="sm:col-span-2">
+                <x-card class="sm:col-span-2 xl:col-span-3">
                     <x-empty-state icon="chalkboard-teacher" title="Belum ada kelas">Tekan "Buat Kelas Baru" untuk mulai.</x-empty-state>
                 </x-card>
             @endforelse

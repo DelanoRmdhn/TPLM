@@ -32,7 +32,7 @@
         </section>
 
         {{-- Kotak rata-rata per kelas, berwarna mapel --}}
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             @foreach ($classes as $className => $rows)
                 @php($subject = $rows->first()->assignment->classroom->subject)
                 <a href="#kelas-{{ $loop->index }}" class="relative overflow-hidden rounded-[22px] p-4 shadow-card active:scale-[0.98] {{ $subject->solidClasses() }}">
@@ -51,6 +51,7 @@
             <section id="kelas-{{ $loop->index }}" class="scroll-mt-20 space-y-2 pt-2">
                 <x-section-title>{{ $className }}</x-section-title>
 
+                <div class="grid gap-3 lg:grid-cols-2">
                 @foreach ($rows as $row)
                     <a href="{{ route('kelas.tugas.show', [$row->assignment->classroom_id, $row->assignment]) }}"
                         class="block rounded-[22px] bg-surface p-4 shadow-card transition active:scale-[0.99]">
@@ -75,6 +76,7 @@
                         @endif
                     </a>
                 @endforeach
+                </div>
             </section>
         @endforeach
     @endif

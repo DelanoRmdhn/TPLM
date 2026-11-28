@@ -28,7 +28,7 @@
             <x-empty-state icon="bell" title="Belum ada notifikasi">Kabar tentang tugas dan nilai akan muncul di sini.</x-empty-state>
         </x-card>
     @else
-        <ul class="space-y-2">
+        <ul class="space-y-2 lg:max-w-3xl">
             @foreach ($notifications as $notification)
                 @php([$icon, $tone] = $types[$notification->type] ?? ['bell', 'bg-brand-50 text-brand'])
                 <li>

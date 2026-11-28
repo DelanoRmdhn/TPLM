@@ -2,6 +2,7 @@
 @extends('layouts.app')
 
 @section('title', $material->exists ? 'Ubah Materi' : 'Buat Materi')
+@section('width', 'narrow')
 @section('back', $material->exists ? route('kelas.materi.show', [$classroom, $material]) : route('kelas.show', $classroom))
 @section('back-label', 'Kembali')
 

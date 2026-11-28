@@ -7,6 +7,10 @@
 
 @section('content')
 
+    {{-- Desktop: pengumpulan siswa di kiri, form nilai di kanan --}}
+    <div class="grid gap-4 lg:grid-cols-12 lg:items-start lg:gap-6">
+    <div class="lg:col-span-7">
+
     <x-card class="space-y-3">
         <div class="flex items-center gap-3">
             <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand text-h2 font-extrabold text-white">
@@ -58,6 +62,10 @@
             </p>
         @endif
     </x-card>
+    </div>
+
+    <div class="lg:sticky lg:top-6 lg:col-span-5">
+
 
     {{-- PB-15: nilai 0 sampai nilai maksimal + umpan balik teks --}}
     @if (! $canManage)
@@ -93,5 +101,8 @@
             <x-button icon="check-circle" size="lg" block>{{ $grade ? 'Perbarui Nilai' : 'Simpan Nilai' }}</x-button>
         </form>
     @endif
+
+    </div>
+    </div>
 
 @endsection

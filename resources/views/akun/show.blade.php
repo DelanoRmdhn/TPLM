@@ -5,6 +5,7 @@
 
 @section('content')
 
+    <div class="grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
     <x-card class="text-center">
         <span class="mx-auto flex size-20 items-center justify-center rounded-full bg-brand text-display font-extrabold text-white">
             {{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}
@@ -44,7 +45,9 @@
         <x-button icon="floppy-disk" block>Simpan Kata Sandi</x-button>
     </form>
 
-    <form method="POST" action="{{ route('logout') }}" data-confirm-title="Keluar dari akun?" data-confirm="Kamu perlu masuk lagi dengan NISN/username dan kata sandi." data-confirm-label="Ya, keluar">
+    </div>
+
+    <form method="POST" action="{{ route('logout') }}" class="lg:hidden" data-confirm-title="Keluar dari akun?" data-confirm="Kamu perlu masuk lagi dengan NISN/username dan kata sandi." data-confirm-label="Ya, keluar">
         @csrf
         <x-button variant="ghost" icon="sign-out" block class="text-danger hover:bg-danger-50">Keluar dari Akun</x-button>
     </form>

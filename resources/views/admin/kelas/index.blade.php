@@ -33,6 +33,7 @@
             <p class="mt-0.5 text-caption text-text-muted">Pindahkan kelas ke guru lain kalau guru pengajarnya pindah tugas. Materi, tugas, dan nilai tetap di kelas.</p>
         </div>
 
+        <div class="grid gap-3 lg:grid-cols-2">
         @forelse ($classrooms as $kelas)
             <article class="space-y-3 rounded-card bg-surface p-4 shadow-card">
                 <div class="flex items-start gap-3">
@@ -77,6 +78,7 @@
                 <x-empty-state icon="chalkboard-teacher" title="Belum ada kelas">{{ $archived ? 'Belum ada kelas yang diarsipkan.' : 'Guru belum membuat kelas.' }}</x-empty-state>
             </x-card>
         @endforelse
+        </div>
 
         {{ $classrooms->links() }}
     </section>

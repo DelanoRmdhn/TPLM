@@ -7,6 +7,10 @@
 
 @section('content')
 
+    {{-- Desktop: info tugas & jumlah di kiri, daftar siswa di kanan --}}
+    <div class="grid gap-4 lg:grid-cols-12 lg:items-start lg:gap-6">
+    <div class="space-y-4 lg:sticky lg:top-6 lg:col-span-5">
+
     <x-card class="space-y-3">
         <div class="flex items-start gap-4">
             <span class="flex size-14 shrink-0 items-center justify-center rounded-[18px] bg-brand-100 text-brand">
@@ -36,6 +40,9 @@
         <x-stat :value="$sudah->count()" label="Sudah mengumpulkan" icon="paper-plane-tilt" tone="brand" />
         <x-stat :value="$belum->count()" label="Belum mengumpulkan" icon="hourglass-medium" tone="sunny" />
     </div>
+    </div>
+
+    <div class="space-y-4 lg:col-span-7">
 
     <x-card padding="p-4">
         <h2 class="flex items-center gap-2 text-h2 font-extrabold">
@@ -97,6 +104,9 @@
             @endforelse
         </ul>
     </x-card>
+
+    </div>
+    </div>
 
     @if ($canDelete)
         <form method="POST" action="{{ route('kelas.tugas.destroy', [$classroom, $assignment]) }}"

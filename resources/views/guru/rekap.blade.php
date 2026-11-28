@@ -14,6 +14,7 @@
         @if ($daftar->isNotEmpty() || $loop->first)
             <section class="space-y-3 pt-1">
                 <x-section-title :icon="$loop->first ? 'chalkboard-teacher' : 'archive'">{{ $judul }}</x-section-title>
+                <div class="grid gap-3 lg:grid-cols-2">
                 @forelse ($daftar as $kelas)
                     <a href="{{ route('kelas.rekap', $kelas) }}" class="flex items-center gap-4 rounded-card bg-surface p-4 shadow-card transition active:scale-[0.99]">
                         <x-subject-icon :subject="$kelas->subject" />
@@ -32,6 +33,7 @@
                         <x-empty-state icon="chalkboard-teacher" title="Belum ada kelas">Buat kelas dulu dari Beranda.</x-empty-state>
                     </x-card>
                 @endforelse
+                </div>
             </section>
         @endif
     @endforeach

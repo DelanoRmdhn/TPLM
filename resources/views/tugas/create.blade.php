@@ -4,6 +4,7 @@
 @php($assignment ??= new \App\Models\Assignment)
 
 @section('title', $assignment->exists ? 'Ubah Tugas' : 'Buat Tugas')
+@section('width', 'narrow')
 @section('back', $assignment->exists ? route('kelas.tugas.show', [$classroom, $assignment]) : route('kelas.show', $classroom))
 @section('back-label', 'Kembali')
 

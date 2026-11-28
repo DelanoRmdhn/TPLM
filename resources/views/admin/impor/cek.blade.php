@@ -2,6 +2,7 @@
 @extends('layouts.app')
 
 @section('title', 'Cek Data Impor')
+@section('width', 'narrow')
 @section('back', route('admin.impor.index'))
 @section('back-label', 'Kembali ke Impor')
 

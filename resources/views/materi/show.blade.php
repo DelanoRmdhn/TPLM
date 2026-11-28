@@ -34,6 +34,7 @@
         @endif
     </x-card>
 
+    <div class="grid gap-4 lg:grid-cols-2">
     @foreach ($material->attachments as $attachment)
         <x-card padding="p-4" class="space-y-3">
 
@@ -66,6 +67,7 @@
 
         </x-card>
     @endforeach
+    </div>
 
     @if ($canManage)
         <div class="grid grid-cols-2 gap-2">

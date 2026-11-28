@@ -35,7 +35,7 @@
         </a>
     @endif
 
-    <section aria-label="Ringkasan" class="grid grid-cols-2 gap-3">
+    <section aria-label="Ringkasan" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <x-stat :value="$activeStudents" label="Siswa aktif" icon="student" tone="brand" :href="route('admin.akun.index', ['peran' => 'siswa', 'status' => 'aktif'])" />
         <x-stat :value="$activeTeachers" label="Guru aktif" icon="chalkboard-teacher" tone="success" :href="route('admin.akun.index', ['peran' => 'guru', 'status' => 'aktif'])" />
         <x-stat :value="$activeClassrooms" label="Kelas berjalan" icon="books" tone="sunny" :href="route('admin.kelas.index')" />
@@ -55,7 +55,7 @@
 
     <section class="space-y-3 pt-2">
         <x-section-title icon="squares-four">Menu</x-section-title>
-        <nav aria-label="Menu admin" class="grid grid-cols-2 gap-3">
+        <nav aria-label="Menu admin" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             @foreach ([
                 ['Kelola Akun', 'users-three', route('admin.akun.index'), 'bg-brand-100 text-brand'],
                 ['Impor Excel', 'microsoft-excel-logo', route('admin.impor.index'), 'bg-success-50 text-success'],

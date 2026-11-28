@@ -16,7 +16,7 @@
     @endphp
 
     {{-- Pilihan tampilan: belum / sudah selesai --}}
-    <div class="grid grid-cols-2 gap-1 rounded-full bg-surface p-1 shadow-card" role="tablist" aria-label="Pilih daftar tugas">
+    <div class="grid grid-cols-2 gap-1 rounded-full bg-surface p-1 shadow-card lg:max-w-md" role="tablist" aria-label="Pilih daftar tugas">
         @foreach (['belum' => 'Belum selesai ('.$groups->flatten(1)->count().')', 'sudah' => 'Sudah selesai ('.$done->count().')'] as $key => $label)
             <button id="tab-{{ $key }}" type="button" role="tab" aria-controls="panel-{{ $key }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}"
                 data-tab="{{ $key }}"
@@ -36,9 +36,11 @@
                     {{ $group }}
                     <span class="rounded-full bg-surface px-2 text-caption text-text-muted shadow-card">{{ $rows->count() }}</span>
                 </h2>
-                @foreach ($rows as $row)
-                    <x-task-card :row="$row" in-pending-list />
-                @endforeach
+                <div class="grid gap-3 lg:grid-cols-2">
+                    @foreach ($rows as $row)
+                        <x-task-card :row="$row" in-pending-list />
+                    @endforeach
+                </div>
             </section>
         @empty
             <x-card>
@@ -48,14 +50,16 @@
     </div>
 
     {{-- Sudah selesai: diserahkan & dinilai (PB-13) --}}
-    <div id="panel-sudah" role="tabpanel" aria-labelledby="tab-sudah" class="hidden space-y-3 pt-1">
+    <div id="panel-sudah" role="tabpanel" aria-labelledby="tab-sudah" class="hidden pt-1">
+        <div class="grid gap-3 lg:grid-cols-2">
         @forelse ($done as $row)
             <x-task-card :row="$row" />
         @empty
-            <x-card>
+            <x-card class="lg:col-span-2">
                 <x-empty-state icon="paper-plane-tilt" title="Belum ada yang dikumpulkan">Tugas yang sudah kamu serahkan akan muncul di sini.</x-empty-state>
             </x-card>
         @endforelse
+        </div>
     </div>
 
     <script>

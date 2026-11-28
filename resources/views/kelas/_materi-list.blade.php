@@ -1,5 +1,5 @@
 {{-- Daftar tugas + materi dalam satu topik: tugas dulu, lalu materi. Tiap item kartu putih sendiri. --}}
-<ul class="space-y-2.5">
+<ul class="grid gap-2.5 lg:grid-cols-2">
     @include('kelas._tugas-list', ['assignments' => $assignments ?? collect()])
 
     @forelse ($materials as $material)
@@ -24,7 +24,7 @@
         </li>
     @empty
         @if (($assignments ?? collect())->isEmpty())
-            <li class="rounded-[22px] border-2 border-dashed border-border p-4 text-center text-caption text-text-muted">Belum ada tugas atau materi di topik ini.</li>
+            <li class="rounded-[22px] border-2 border-dashed lg:col-span-2 border-border p-4 text-center text-caption text-text-muted">Belum ada tugas atau materi di topik ini.</li>
         @endif
     @endforelse
 </ul>

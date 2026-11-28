@@ -25,6 +25,7 @@
             <p class="mt-0.5 text-caption text-text-muted">Pilihan ini muncul di form buat kelas guru. Ganti nama juga mengganti nama mapel di kelas yang sudah ada.</p>
         </div>
 
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         @forelse ($subjects as $subject)
             @php($used = $subject->classrooms_count)
             <article class="space-y-2 rounded-card bg-surface p-4 shadow-card">
@@ -57,6 +58,7 @@
                 <x-empty-state icon="books" title="Belum ada mata pelajaran">Tambahkan dulu supaya guru bisa membuat kelas.</x-empty-state>
             </x-card>
         @endforelse
+        </div>
     </section>
 
 @endsection

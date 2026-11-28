@@ -2,6 +2,7 @@
 @extends('layouts.app')
 
 @section('title', 'Buat Kelas Baru')
+@section('width', 'narrow')
 @section('back', route('guru.beranda'))
 @section('back-label', 'Kembali ke Beranda')
 

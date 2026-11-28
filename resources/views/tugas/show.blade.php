@@ -17,6 +17,10 @@
 
 @section('content')
 
+    {{-- Desktop: info tugas di kiri, nilai/pengumpulan/form kumpul di kanan --}}
+    <div class="grid gap-4 lg:grid-cols-12 lg:items-start lg:gap-6">
+    <div class="space-y-4 lg:col-span-7">
+
     {{-- Tugasnya --}}
     <x-card class="space-y-4">
         <div class="grid grid-cols-2 gap-2">
@@ -49,6 +53,10 @@
 
         @include('tugas._lampiran', ['attachments' => $assignment->attachments])
     </x-card>
+    </div>
+
+    <div class="space-y-4 lg:sticky lg:top-6 lg:col-span-5">
+
 
     {{-- Nilai & umpan balik (FR-25) --}}
     @if ($grade)
@@ -284,5 +292,8 @@
             })();
         </script>
     @endif
+
+    </div>
+    </div>
 
 @endsection

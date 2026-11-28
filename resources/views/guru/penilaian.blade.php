@@ -21,6 +21,7 @@
         </x-card>
     @endif
 
+    <div class="grid gap-4 lg:grid-cols-2 lg:items-start">
     @foreach ($classes as $kelas)
         <x-card padding="p-4">
             <div class="flex items-center gap-3">
@@ -60,5 +61,6 @@
             @endforeach
         </x-card>
     @endforeach
+    </div>
 
 @endsection

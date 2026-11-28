@@ -73,6 +73,7 @@
     <section class="space-y-3">
         <p class="text-caption font-bold text-text-muted">{{ $users->total() }} akun</p>
 
+        <div class="grid gap-3 lg:grid-cols-2">
         @forelse ($users as $user)
             <article @class(['rounded-card bg-surface p-4 shadow-card', 'opacity-70' => ! $user->is_active])>
                 <div class="flex items-start gap-3">
@@ -121,6 +122,7 @@
                 <x-empty-state icon="magnifying-glass" title="Tidak ada akun">Belum ada akun yang cocok dengan pencarian.</x-empty-state>
             </x-card>
         @endforelse
+        </div>
 
         {{ $users->links() }}
     </section>

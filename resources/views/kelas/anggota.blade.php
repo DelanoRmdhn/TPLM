@@ -47,7 +47,7 @@
             Siswa ({{ $students->count() }})
         </h2>
 
-        <ul class="mt-3 space-y-2">
+        <ul class="mt-3 grid gap-2 lg:grid-cols-2">
             @forelse ($students as $student)
                 <li class="flex min-h-14 items-center gap-3 rounded-control bg-background p-3">
                     <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-caption font-extrabold text-brand">

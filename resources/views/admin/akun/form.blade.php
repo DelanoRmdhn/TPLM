@@ -2,6 +2,7 @@
 @extends('layouts.app')
 
 @section('title', $user->exists ? 'Ubah Akun' : 'Tambah Akun')
+@section('width', 'narrow')
 @section('back', route('admin.akun.index'))
 @section('back-label', 'Kembali ke Kelola Akun')
 
