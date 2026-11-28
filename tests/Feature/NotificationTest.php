@@ -89,7 +89,7 @@ class NotificationTest extends TestCase
         $this->actingAs($this->guru)->put($url, ['score' => 45]);
 
         $this->assertEqualsCanonicalizing(
-            ['Tugas dinilai: Latihan 1 · 40/50', 'Nilai diperbarui: Latihan 1 · 45/50'],
+            ['Tugas dinilai: Latihan 1, nilai 40/50', 'Nilai diperbarui: Latihan 1, nilai 45/50'],
             $this->messages($this->ani),
         );
         $this->assertSame(2, $this->ani->notifications()->where('type', GradePublished::class)->count());

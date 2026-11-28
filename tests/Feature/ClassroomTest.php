@@ -48,7 +48,7 @@ class ClassroomTest extends TestCase
 
         $this->actingAs($this->guru)->get('/guru/buat-kelas')
             ->assertOk()
-            ->assertSee('4A · 2 siswa')
+            ->assertSee('4A (2 siswa)')
             ->assertSee(Classroom::academicYearOptions()[0]);
     }
 
@@ -264,7 +264,7 @@ class ClassroomTest extends TestCase
         $this->actingAs($ani)->get('/siswa/tugas')->assertDontSee('Latihan Pecahan');
 
         // Hanya bisa dilihat: tidak bisa buat topik atau ubah kelas
-        $this->actingAs($this->guru)->get("/kelas/{$kelas->id}")->assertOk()->assertSee('Pulihkan Kelas')->assertDontSee('+ Buat Tugas');
+        $this->actingAs($this->guru)->get("/kelas/{$kelas->id}")->assertOk()->assertSee('Pulihkan Kelas')->assertDontSee(route('kelas.tugas.create', $kelas), false);
         $this->actingAs($this->guru)->post("/kelas/{$kelas->id}/topik", ['name' => 'Bab 9'])->assertForbidden();
         $this->actingAs($this->guru)->get("/kelas/{$kelas->id}/ubah")->assertForbidden();
 

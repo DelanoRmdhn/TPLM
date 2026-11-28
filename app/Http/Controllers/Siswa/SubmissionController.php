@@ -91,9 +91,12 @@ class SubmissionController extends Controller
             $submission->setRelation('assignment', $assignment)->setRelation('student', $student),
         ));
 
-        return back()->with('status', $assignment->isPastDue()
-            ? 'Tugas diserahkan (terlambat). Guru tetap bisa menilainya.'
-            : 'Tugas berhasil diserahkan!');
+        // Perayaan konfeti di halaman berikutnya (lihat components/feedback & resources/js/confetti.js)
+        return back()
+            ->with('celebrate', true)
+            ->with('status', $assignment->isPastDue()
+                ? 'Tugas diserahkan (terlambat). Guru tetap bisa menilainya.'
+                : 'Tugas berhasil diserahkan!');
     }
 
     /** Tarik kembali pengumpulan: status kembali "Belum dikerjakan"/"Terlambat", file yang dikirim dihapus. */

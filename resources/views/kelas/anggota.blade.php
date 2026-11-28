@@ -1,71 +1,85 @@
-{{-- S13 Anggota kelas + pop-up tambah rombel — SEMENTARA dari BE. Nanti diganti hasil slicing Delano. --}}
-@extends('layouts.sementara')
+{{-- S13 Anggota kelas (FR-09, FR-11, PB-07). Guru pengajar bisa menambah rombel/siswa dan mengeluarkan siswa. --}}
+@extends('layouts.app')
 
-@section('title', 'Anggota · '.$classroom->name)
+@section('title', 'Anggota Kelas')
+@section('back', route('kelas.show', $classroom))
+@section('back-label', 'Kembali ke kelas')
 
 @section('content')
 
-    <a href="{{ route('kelas.show', $classroom) }}" class="inline-flex h-12 items-center text-brand underline">← Kembali ke kelas</a>
-
-    <section class="rounded-card border border-border bg-white p-4">
-        <p class="text-caption text-text-muted">{{ $classroom->subject->name }} · {{ $classroom->academic_year }}</p>
-        <h1 class="text-h1 font-bold">{{ $classroom->name }}</h1>
-    </section>
+    <x-card>
+        <div class="flex items-center gap-4">
+            <x-subject-icon :subject="$classroom->subject" />
+            <div class="min-w-0 flex-1">
+                <h1 class="truncate text-h1 font-extrabold">{{ $classroom->name }}</h1>
+                <p class="mt-0.5 flex items-center gap-1.5 text-text-muted">
+                    <x-icon name="chalkboard-teacher" class="size-5" />
+                    {{ $classroom->teacher->name }}
+                </p>
+            </div>
+        </div>
+    </x-card>
 
     @if ($canManage)
-        <form method="POST" action="{{ route('kelas.anggota.rombel', $classroom) }}"
-            class="space-y-3 rounded-card border border-border bg-white p-4">
-            @csrf
-            <label for="rombel" class="block font-semibold">Tambah satu rombel</label>
-            <select id="rombel" name="rombel" required class="h-12 w-full rounded-control border border-border px-3">
-                <option value="">Pilih rombel</option>
-                @foreach ($rombels as $rombel)
-                    <option value="{{ $rombel->id }}">{{ $rombel->name }} · {{ $rombel->students_count }} siswa</option>
-                @endforeach
-            </select>
-            <p class="text-caption text-text-muted">Semua siswa rombel itu masuk sekaligus. Yang sudah ada tidak dobel.</p>
-            <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">Tambahkan</button>
-        </form>
+        <div class="grid gap-3 sm:grid-cols-2">
+            <form method="POST" action="{{ route('kelas.anggota.rombel', $classroom) }}" class="space-y-3 rounded-card bg-surface p-5 shadow-card">
+                @csrf
+                <x-select name="rombel" label="Tambah satu rombel" hint="Semua siswa rombel itu masuk sekaligus. Yang sudah ada tidak dobel." required>
+                    <option value="">Pilih rombel</option>
+                    @foreach ($rombels as $rombel)
+                        <option value="{{ $rombel->id }}">{{ $rombel->name }} ({{ $rombel->students_count }} siswa)</option>
+                    @endforeach
+                </x-select>
+                <x-button icon="users-three" block>Tambahkan Rombel</x-button>
+            </form>
 
-        <form method="POST" action="{{ route('kelas.anggota.store', $classroom) }}"
-            class="space-y-3 rounded-card border border-border bg-white p-4">
-            @csrf
-            <label for="nisn" class="block font-semibold">Tambah satu siswa</label>
-            <input id="nisn" name="nisn" required inputmode="numeric" maxlength="50" value="{{ old('nisn') }}" placeholder="NISN siswa"
-                class="h-12 w-full rounded-control border border-border px-3">
-            <button type="submit" class="h-12 w-full rounded-control border border-brand font-semibold text-brand">Tambahkan Siswa</button>
-        </form>
+            <form method="POST" action="{{ route('kelas.anggota.store', $classroom) }}" class="space-y-3 rounded-card bg-surface p-5 shadow-card">
+                @csrf
+                <x-text-input name="nisn" label="Tambah satu siswa" placeholder="NISN siswa" hint="Mis. siswa pindahan atau dari rombel lain." required inputmode="numeric" maxlength="50" />
+                <x-button variant="secondary" icon="user-plus" block>Tambahkan Siswa</x-button>
+            </form>
+        </div>
     @endif
 
-    <section class="rounded-card border border-border bg-white p-4">
-        <h2 class="font-bold">Guru</h2>
-        <p class="mt-2">{{ $classroom->teacher->name }}</p>
-    </section>
+    <x-card padding="p-4">
+        <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+            <x-icon name="users-three" class="size-6 text-brand" />
+            Siswa ({{ $students->count() }})
+        </h2>
 
-    <section class="rounded-card border border-border bg-white p-4">
-        <h2 class="font-bold">Siswa ({{ $students->count() }})</h2>
-
-        <ul class="mt-2 divide-y divide-border">
+        <ul class="mt-3 space-y-2">
             @forelse ($students as $student)
-                <li class="flex items-center justify-between gap-2 py-3">
-                    <span>{{ $student->name }}</span>
-                    {{-- NISN hanya untuk guru (NFR-10) --}}
+                <li class="flex min-h-14 items-center gap-3 rounded-control bg-background p-3">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-caption font-extrabold text-brand">
+                        {{ mb_strtoupper(mb_substr($student->name, 0, 1)) }}
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate font-bold">{{ $student->name }}</span>
+                        {{-- NISN hanya untuk guru (NFR-10) --}}
+                        @if ($canManage)
+                            <span class="mt-0.5 flex flex-wrap gap-x-3 text-caption text-text-muted">
+                                <span class="inline-flex items-center gap-1"><x-icon name="identification-card" class="size-4" />{{ $student->username }}</span>
+                                @if ($student->rombel)
+                                    <span class="inline-flex items-center gap-1"><x-icon name="student" class="size-4" />{{ $student->rombel->name }}</span>
+                                @endif
+                            </span>
+                        @endif
+                    </span>
                     @if ($canManage)
-                        <span class="flex items-center gap-2">
-                            <span class="text-caption text-text-muted">{{ $student->username }} · {{ $student->rombel?->name }}</span>
-                            <form method="POST" action="{{ route('kelas.anggota.destroy', [$classroom, $student]) }}"
-                                onsubmit="return confirm(@js('Keluarkan '.$student->name.' dari kelas?'))">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" aria-label="Keluarkan {{ $student->name }}" class="h-12 rounded-control border border-red-300 px-3 text-caption font-semibold text-danger">Keluarkan</button>
-                            </form>
-                        </span>
+                        <form method="POST" action="{{ route('kelas.anggota.destroy', [$classroom, $student]) }}"
+                            data-confirm-title="Keluarkan dari kelas?" data-confirm="{{ $student->name.' tidak bisa membuka kelas ini lagi. Pengumpulan dan nilainya tetap tersimpan.' }}" data-confirm-label="Ya, keluarkan" data-confirm-tone="danger">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" aria-label="Keluarkan {{ $student->name }}" class="flex size-11 items-center justify-center rounded-full text-danger hover:bg-danger-50">
+                                <x-icon name="user-minus" class="size-6" />
+                            </button>
+                        </form>
                     @endif
                 </li>
             @empty
-                <li class="py-3 text-text-muted">Belum ada siswa.</li>
+                <li class="rounded-control bg-background p-3 text-text-muted">Belum ada siswa.</li>
             @endforelse
         </ul>
-    </section>
+    </x-card>
 
 @endsection

@@ -1,242 +1,97 @@
+{{-- Beranda guru (FR-07, FR-10, PB-06): ringkasan yang perlu dinilai, kelas yang diajar, kelas arsip. --}}
+@extends('layouts.app')
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @include('partials.pwa-head')
-    <title>Beranda Guru</title>
+@section('title', 'Beranda')
+@section('header')
+    @include('partials.brand')
+@endsection
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@section('content')
 
-<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+    @php($firstName = \Illuminate\Support\Str::before(auth()->user()->name.' ', ' '))
 
-    <div class="mx-auto min-h-screen w-full max-w-[390px] bg-slate-50 pb-[76px]">
+    {{-- Sapaan + yang perlu dinilai --}}
+    <section class="relative overflow-hidden rounded-card bg-brand p-5 text-white shadow-card">
+        <span class="absolute -top-8 -right-8 size-32 rounded-full bg-white/10" aria-hidden="true"></span>
+        <div class="relative">
+            <h1 class="text-h1 font-extrabold">Halo, {{ $firstName }}!</h1>
+            <p class="mt-1 text-white/85">
+                {{ $ungradedCount > 0 ? 'Ada pengumpulan siswa yang menunggu dinilai.' : 'Semua pengumpulan sudah dinilai. Mantap!' }}
+            </p>
 
-        {{-- HEADER --}}
-        <header class="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
-            <div class="flex size-[46px] shrink-0 items-center justify-center rounded-2xl bg-brand text-white">
-                <svg viewBox="0 0 24 24" class="size-7"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m2 9 10-5 10 5-10 5L2 9Z"/>
-                    <path d="M6 11v5c3.5 3 8.5 3 12 0v-5"/>
-                    <path d="M22 9v6"/>
-                </svg>
-            </div>
-
-            <div>
-                <h1 class="text-[18px] leading-tight font-bold">
-                    Halo, {{ auth()->user()->name }}!
-                </h1>
-                <p class="mt-1 text-sm text-slate-600">
-                    Guru
-                </p>
-            </div>
-        </header>
-
-        <main class="space-y-3.5 px-4 py-5">
-
-            @if (session('status'))
-                <div role="status" class="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            {{-- RINGKASAN PENILAIAN: pengumpulan yang belum dinilai --}}
             @if ($ungradedCount > 0)
-            <section class="rounded-2xl bg-blue-100 p-4">
-
-                <div class="flex items-center gap-2 text-brand">
-                    <svg viewBox="0 0 24 24" class="size-5"
-                        fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <rect x="5" y="4" width="14" height="17" rx="2"/>
-                        <path d="M9 4.5V3h6v1.5"/>
-                        <path d="m9 12 2 2 4-4"/>
-                    </svg>
-                    <span class="text-sm font-semibold">Perlu dinilai</span>
+                <div class="mt-4 rounded-[18px] bg-white/15 p-4">
+                    <p class="flex items-center gap-2 font-bold">
+                        <x-icon name="list-checks" variant="fill" class="size-5 text-sunny" />
+                        Perlu dinilai
+                    </p>
+                    <p class="mt-1 flex items-baseline gap-2">
+                        <span class="text-display font-extrabold">{{ $ungradedCount }}</span>
+                        <span class="font-bold">tugas siswa</span>
+                    </p>
+                    <p class="mt-1 text-caption text-white/85">
+                        Dari {{ $ungradedPerClass->count() }} kelas. Paling lama dikirim {{ $oldestUngraded->submitted_at->diffForHumans() }}.
+                    </p>
+                    <x-button :href="route('kelas.tugas.nilai.edit', [$oldestUngraded->classroom_id, $oldestUngraded->assignment_id, $oldestUngraded->student_id])"
+                        variant="secondary" icon="pencil-simple-line" block class="mt-3 border-0">
+                        Mulai Menilai
+                    </x-button>
                 </div>
-
-                <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-[32px] leading-none font-bold">{{ $ungradedCount }}</span>
-                    <span class="text-base font-semibold">tugas siswa</span>
-                </div>
-
-                <p class="mt-3 text-[15px] leading-[1.5] text-slate-700">
-                    Dari {{ $ungradedPerClass->count() }} kelas · paling lama dikirim {{ $oldestUngraded->submitted_at->diffForHumans() }}
-                </p>
-
-                <a href="{{ route('kelas.tugas.nilai.edit', [$oldestUngraded->classroom_id, $oldestUngraded->assignment_id, $oldestUngraded->student_id]) }}"
-                    class="mt-2.5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
-                    <svg viewBox="0 0 24 24" class="size-5"
-                        fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m9 18 6-6-6-6"/>
-                    </svg>
-                    Mulai Menilai
-                </a>
-
-            </section>
             @endif
-
-            {{-- BUAT KELAS --}}
-            <a href="{{ route('guru.buat-kelas') }}"
-                class="flex min-h-[50px] items-center justify-center gap-2 rounded-xl border border-brand bg-white px-4 text-sm font-semibold text-brand transition hover:bg-blue-50">
-                <svg viewBox="0 0 24 24" class="size-5"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
-                Buat Kelas Baru
-            </a>
-
-            {{-- KELAS SAYA --}}
-            <section>
-                <h2 class="py-1 text-[17px] font-bold">Kelas Saya</h2>
-
-                <div class="mt-3 space-y-3.5">
-
-                    @php($warna = ['bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-amber-100 text-amber-700'])
-
-                    @forelse ($classrooms as $kelas)
-                        <a href="{{ route('kelas.show', $kelas) }}"
-                            class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-300">
-                            <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl {{ $warna[$loop->index % 3] }}">
-                                <svg viewBox="0 0 24 24" class="size-6"
-                                    fill="none" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M12 7v14"/>
-                                    <path d="M12 7C9 4 5 4 3 5v14c3-1 6-1 9 2"/>
-                                    <path d="M12 7c3-3 7-3 9-2v14c-3-1-6-1-9 2"/>
-                                </svg>
-                            </div>
-
-                            <div class="min-w-0 flex-1">
-                                <h3 class="font-bold">{{ $kelas->name }}</h3>
-                                <p class="mt-1 text-sm text-slate-600">
-                                    {{ $kelas->students_count }} siswa · {{ $kelas->academic_year }}
-                                </p>
-                                @if ($perlu = $ungradedPerClass->get($kelas->id))
-                                    <p class="mt-1 flex items-center gap-1.5 text-xs font-semibold text-orange-700">
-                                        <svg viewBox="0 0 24 24" class="size-4 shrink-0"
-                                            fill="none" stroke="currentColor" stroke-width="1.8"
-                                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <rect x="5" y="4" width="14" height="17" rx="2"/>
-                                            <path d="M9 4.5V3h6v1.5"/>
-                                            <path d="m9 12 2 2 4-4"/>
-                                        </svg>
-                                        {{ $perlu }} tugas perlu dinilai
-                                    </p>
-                                @endif
-                            </div>
-
-                            <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
-                                fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="m9 18 6-6-6-6"/>
-                            </svg>
-                        </a>
-                    @empty
-                        <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                            Belum ada kelas. Tekan "Buat Kelas Baru" untuk mulai.
-                        </p>
-                    @endforelse
-
-                </div>
-            </section>
-
-            {{-- KELAS DIARSIPKAN --}}
-            @if ($archivedClassrooms->isNotEmpty())
-                <details class="rounded-2xl border border-slate-200 bg-white p-4">
-                    <summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Kelas diarsipkan ({{ $archivedClassrooms->count() }})</summary>
-                    <ul class="mt-2 divide-y divide-slate-200">
-                        @foreach ($archivedClassrooms as $kelas)
-                            <li>
-                                <a href="{{ route('kelas.show', $kelas) }}" class="flex min-h-[50px] items-center justify-between gap-2 py-2">
-                                    <span class="font-semibold">{{ $kelas->name }}</span>
-                                    <span class="text-sm text-slate-600">{{ $kelas->academic_year }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </details>
-            @endif
-
-        </main>
-    </div>
-
-    {{-- BOTTOM NAVIGATION --}}
-    <nav aria-label="Navigasi utama"
-        class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white">
-        <div class="mx-auto grid h-[66px] w-full max-w-[390px] grid-cols-5 px-1">
-
-            <a href="{{ route('guru.beranda') }}" aria-current="page"
-                class="flex flex-col items-center justify-center gap-0.5 text-brand">
-                <span class="flex h-8 w-12 items-center justify-center rounded-full bg-blue-100">
-                    <svg viewBox="0 0 24 24" class="size-6"
-                        fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m3 10 9-7 9 7"/>
-                        <path d="M5 9v11h14V9"/>
-                        <path d="M9 20v-7h6v7"/>
-                    </svg>
-                </span>
-                <span class="text-[11px] font-semibold">Beranda</span>
-            </a>
-
-            <a href="{{ route('guru.penilaian') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="5" y="4" width="14" height="17" rx="2"/>
-                    <path d="M9 4.5V3h6v1.5"/>
-                    <path d="m9 12 2 2 4-4"/>
-                </svg>
-                <span class="text-[11px] font-medium">Penilaian</span>
-            </a>
-
-            <a href="{{ route('guru.rekap') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M4 20V10M10 20V4M16 20v-7M22 20V8"/>
-                </svg>
-                <span class="text-[11px] font-medium">Rekap</span>
-            </a>
-
-            <a href="{{ route('notifikasi.index') }}"
-                class="relative flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                    <path d="M10 21h4"/>
-                </svg>
-                @if ($unreadNotifications > 0)
-                    <span class="absolute top-2 left-1/2 ml-1 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-                        {{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}<span class="sr-only"> belum dibaca</span>
-                    </span>
-                @endif
-                <span class="text-[11px] font-medium">Notifikasi</span>
-            </a>
-
-            <a href="{{ route('akun') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
-                </svg>
-                <span class="text-[11px] font-medium">Akun</span>
-            </a>
-
         </div>
-    </nav>
+    </section>
 
-</body>
-</html>
+    {{-- Kelas yang diajar --}}
+    <section class="space-y-3 pt-2">
+        <x-section-title icon="chalkboard-teacher">Kelas Saya</x-section-title>
+
+        <x-button :href="route('guru.buat-kelas')" variant="secondary" icon="plus-circle" block>Buat Kelas Baru</x-button>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+            @forelse ($classrooms as $kelas)
+                <a href="{{ route('kelas.show', $kelas) }}"
+                    class="flex items-center gap-4 rounded-card bg-surface p-4 shadow-card transition active:scale-[0.99]">
+                    <x-subject-icon :subject="$kelas->subject" size="lg" />
+                    <div class="min-w-0 flex-1">
+                        <h3 class="truncate text-[17px] font-extrabold">{{ $kelas->name }}</h3>
+                        <p class="mt-0.5 flex flex-wrap items-center gap-x-3 text-caption text-text-muted">
+                            <span class="inline-flex items-center gap-1"><x-icon name="users-three" class="size-4" />{{ $kelas->students_count }} siswa</span>
+                            <span class="inline-flex items-center gap-1"><x-icon name="calendar-blank" class="size-4" />{{ $kelas->academic_year }}</span>
+                        </p>
+                        @if ($perlu = $ungradedPerClass->get($kelas->id))
+                            <x-chip icon="list-checks" tone="sunny" class="mt-2">{{ $perlu }} tugas perlu dinilai</x-chip>
+                        @endif
+                    </div>
+                    <x-icon name="caret-right" variant="bold" class="size-5 text-text-muted" />
+                </a>
+            @empty
+                <x-card class="sm:col-span-2">
+                    <x-empty-state icon="chalkboard-teacher" title="Belum ada kelas">Tekan "Buat Kelas Baru" untuk mulai.</x-empty-state>
+                </x-card>
+            @endforelse
+        </div>
+    </section>
+
+    {{-- Kelas yang diarsipkan --}}
+    @if ($archivedClassrooms->isNotEmpty())
+        <details class="group rounded-card bg-surface p-4 shadow-card">
+            <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 font-extrabold">
+                <x-icon name="archive" class="size-6 text-text-muted" />
+                <span class="flex-1">Kelas diarsipkan ({{ $archivedClassrooms->count() }})</span>
+                <x-icon name="caret-down" variant="bold" class="size-5 text-text-muted transition group-open:rotate-180" />
+            </summary>
+            <ul class="mt-2 space-y-2">
+                @foreach ($archivedClassrooms as $kelas)
+                    <li>
+                        <a href="{{ route('kelas.show', $kelas) }}" class="flex min-h-14 items-center gap-3 rounded-control bg-background p-3 hover:bg-brand-50">
+                            <x-subject-icon :subject="$kelas->subject" class="size-10! rounded-[12px]!" />
+                            <span class="min-w-0 flex-1 truncate font-bold">{{ $kelas->name }}</span>
+                            <x-chip icon="calendar-blank">{{ $kelas->academic_year }}</x-chip>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </details>
+    @endif
+
+@endsection

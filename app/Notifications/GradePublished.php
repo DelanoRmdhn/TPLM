@@ -23,7 +23,7 @@ class GradePublished extends Notification
         $what = $this->updated ? 'Nilai diperbarui' : 'Tugas dinilai';
 
         return [
-            'message' => "{$what}: {$assignment->title} · {$this->grade->score}/{$assignment->max_score}",
+            'message' => "{$what}: {$assignment->title}, nilai {$this->grade->score}/{$assignment->max_score}",
             'url' => route('kelas.tugas.show', [$assignment->classroom_id, $assignment]),
         ];
     }

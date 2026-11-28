@@ -1,62 +1,64 @@
-{{-- M04b Buat/ubah materi — SEMENTARA dari BE. Nanti diganti hasil slicing Delano. --}}
-@extends('layouts.sementara')
+{{-- M04b Buat/ubah materi: judul, topik, keterangan, file & video YouTube (FR-14, FR-15, PB-09). --}}
+@extends('layouts.app')
 
-@section('title', ($material->exists ? 'Ubah Materi · ' : 'Buat Materi · ').$classroom->name)
+@section('title', $material->exists ? 'Ubah Materi' : 'Buat Materi')
+@section('back', $material->exists ? route('kelas.materi.show', [$classroom, $material]) : route('kelas.show', $classroom))
+@section('back-label', 'Kembali')
 
 @section('content')
 
-    <a href="{{ $material->exists ? route('kelas.materi.show', [$classroom, $material]) : route('kelas.show', $classroom) }}"
-        class="inline-flex h-12 items-center text-brand underline">← Kembali</a>
-
     <form method="POST" enctype="multipart/form-data"
         action="{{ $material->exists ? route('kelas.materi.update', [$classroom, $material]) : route('kelas.materi.store', $classroom) }}"
-        class="space-y-4 rounded-card border border-border bg-white p-4">
+        class="space-y-5">
         @csrf
         @if ($material->exists)
             @method('PUT')
         @endif
 
-        <div>
-            <label for="title" class="mb-1 block font-semibold">Judul materi</label>
-            <input id="title" name="title" value="{{ old('title', $material->title) }}" required maxlength="150"
-                placeholder="Contoh: Mengenal Pecahan" class="h-12 w-full rounded-control border border-border px-3">
-        </div>
+        <x-card class="space-y-4">
+            <p class="flex items-center gap-2 text-caption font-bold text-text-muted">
+                <x-subject-icon :subject="$classroom->subject" class="size-8! rounded-[10px]! [&_svg]:size-5!" />
+                {{ $classroom->name }}
+            </p>
 
-        <div>
-            <label for="topic_id" class="mb-1 block font-semibold">Topik</label>
-            <select id="topic_id" name="topic_id" class="h-12 w-full rounded-control border border-border px-3">
+            <x-text-input name="title" label="Judul materi" :value="$material->title" required maxlength="150" placeholder="Contoh: Mengenal Pecahan" />
+
+            <x-textarea name="description" label="Keterangan" :value="$material->description" rows="4" maxlength="5000" optional
+                placeholder="Contoh: Baca dulu, lalu tonton videonya." />
+        </x-card>
+
+        <x-card class="space-y-4">
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+                <x-icon name="bookmark-simple" class="size-6 text-brand" />
+                Topik
+            </h2>
+            <x-select name="topic_id" label="Pilih topik">
                 <option value="">Tanpa topik</option>
                 @foreach ($topics as $topic)
                     <option value="{{ $topic->id }}" @selected(old('topic_id', $material->topic_id) == $topic->id)>{{ $topic->name }}</option>
                 @endforeach
-            </select>
-            <input name="new_topic" value="{{ old('new_topic') }}" maxlength="100"
-                placeholder="atau ketik topik baru" class="mt-2 h-12 w-full rounded-control border border-border px-3">
-        </div>
+            </x-select>
+            <x-text-input name="new_topic" label="Atau buat topik baru" maxlength="100" placeholder="Contoh: Bab 2: Bangun Datar" />
+        </x-card>
 
-        <div>
-            <label for="description" class="mb-1 block font-semibold">Keterangan (boleh kosong)</label>
-            <textarea id="description" name="description" rows="4" maxlength="5000"
-                class="w-full rounded-control border border-border p-3">{{ old('description', $material->description) }}</textarea>
-        </div>
+        <x-card class="space-y-4">
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+                <x-icon name="paperclip" class="size-6 text-brand" />
+                File dan video
+            </h2>
 
-        @if ($material->exists)
-            @include('materi._lampiran-lama', ['attachments' => $material->attachments])
-        @endif
+            @if ($material->exists)
+                @include('materi._lampiran-lama', ['attachments' => $material->attachments])
+            @endif
 
-        <div>
-            <label for="files" class="mb-1 block font-semibold">{{ $material->exists ? 'Tambah file' : 'File' }} (PDF, gambar, DOCX · maks 10 MB per file)</label>
-            <input id="files" name="files[]" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.docx"
-                class="block w-full rounded-control border border-border p-3">
-        </div>
+            <x-file-input name="files[]" :label="$material->exists ? 'Tambah file' : 'File'" types="pdf,jpg,jpeg,png,docx" :max-mb="10" multiple />
 
-        <div>
-            <label for="links" class="mb-1 block font-semibold">Tautan video YouTube (satu per baris)</label>
-            <textarea id="links" name="links" rows="2" placeholder="https://www.youtube.com/watch?v=..."
-                class="w-full rounded-control border border-border p-3">{{ old('links') }}</textarea>
-        </div>
+            <x-textarea name="links" label="Tautan video YouTube" rows="2" hint="Satu tautan per baris." placeholder="https://www.youtube.com/watch?v=..." />
+        </x-card>
 
-        <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">{{ $material->exists ? 'Simpan Perubahan' : 'Bagikan Materi' }}</button>
+        <x-button :icon="$material->exists ? 'floppy-disk' : 'share-fat'" size="lg" block>
+            {{ $material->exists ? 'Simpan Perubahan' : 'Bagikan Materi' }}
+        </x-button>
     </form>
 
 @endsection

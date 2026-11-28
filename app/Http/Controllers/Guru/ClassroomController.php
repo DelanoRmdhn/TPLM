@@ -23,6 +23,7 @@ class ClassroomController extends Controller
     public function index(Request $request, UngradedSubmissions $ungradedSubmissions): View
     {
         [$archived, $classrooms] = $request->user()->teachingClassrooms()
+            ->with('subject')
             ->withCount('students')
             ->latest()
             ->get()

@@ -1,241 +1,65 @@
+{{-- Buat kelas (FR-07, PB-07): semua siswa aktif rombel yang dipilih otomatis masuk. --}}
+@extends('layouts.app')
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @include('partials.pwa-head')
-    <title>Buat Kelas Baru</title>
+@section('title', 'Buat Kelas Baru')
+@section('back', route('guru.beranda'))
+@section('back-label', 'Kembali ke Beranda')
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@section('content')
 
-<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+    <form id="form-kelas" action="{{ route('guru.kelas.store') }}" method="POST" class="space-y-4 rounded-card bg-surface p-5 shadow-card">
+        @csrf
 
-    <div class="mx-auto min-h-screen w-full max-w-[390px] bg-slate-50">
+        <p class="text-text-muted">Kelas berisi materi, tugas, dan nilai untuk satu mata pelajaran.</p>
 
-        {{-- HEADER --}}
-        <header class="border-b border-slate-200 bg-white px-4 pb-3 pt-1">
+        <x-text-input name="nama_kelas" label="Nama kelas" placeholder="Contoh: Matematika 4A" required maxlength="100" />
 
-            <a href="{{ route('guru.beranda') }}"
-                class="inline-flex items-center gap-2 rounded-lg px-3 py-1 text-sm font-medium text-slate-800 hover:bg-slate-100">
+        <x-select name="mata_pelajaran" label="Mata pelajaran" required>
+            @forelse ($subjects as $subject)
+                <option value="{{ $subject->id }}" @selected((int) old('mata_pelajaran') === $subject->id)>{{ $subject->name }}</option>
+            @empty
+                <option value="" disabled selected>Belum ada mata pelajaran. Hubungi admin.</option>
+            @endforelse
+        </x-select>
 
-                <svg viewBox="0 0 24 24" class="size-5"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="m15 18-6-6 6-6"/>
-                    <path d="M9 12h12"/>
-                </svg>
+        <x-select name="rombel" label="Rombel" required>
+            @forelse ($rombels as $rombel)
+                <option value="{{ $rombel->id }}" data-name="{{ $rombel->name }}" data-count="{{ $rombel->students_count }}" @selected(old('rombel') == $rombel->id)>
+                    {{ $rombel->name }} ({{ $rombel->students_count }} siswa)
+                </option>
+            @empty
+                <option value="" disabled selected>Belum ada rombel. Minta admin menambahkan rombel.</option>
+            @endforelse
+        </x-select>
 
-                Kembali
-            </a>
+        <x-select name="tahun_ajaran" label="Tahun ajaran" required>
+            @foreach ($academicYears as $year)
+                <option value="{{ $year }}" @selected(old('tahun_ajaran') === $year)>{{ $year }}</option>
+            @endforeach
+        </x-select>
 
-            <h1 class="mt-2 text-xl font-bold">
-                Buat Kelas Baru
-            </h1>
+        <p class="flex items-start gap-3 rounded-control bg-success-50 p-4 text-text">
+            <x-icon name="users-three" variant="fill" class="size-6 text-success" />
+            <span>
+                Semua <strong id="jumlah-siswa">0</strong> siswa rombel <strong id="nama-rombel">-</strong> otomatis masuk ke kelas ini.
+                Siswa pindahan bisa ditambahkan lewat NISN di halaman Anggota.
+            </span>
+        </p>
 
-            <p class="mt-2 text-sm text-slate-600">
-                Kelas berisi materi, tugas, dan nilai
-            </p>
-
-        </header>
-
-        <main class="space-y-4 px-4 py-5">
-
-            {{-- FORM KELAS --}}
-            <section class="rounded-2xl border border-slate-200 bg-white p-5">
-
-                <form id="form-kelas" action="{{ route('guru.kelas.store') }}" method="POST" class="space-y-4">
-                    @csrf
-
-                    @if ($errors->any())
-                        <div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {{ $errors->first() }}
-                        </div>
-                    @endif
-
-                    {{-- Nama Kelas --}}
-                    <div>
-                        <label for="nama_kelas"
-                            class="mb-2 block text-base font-semibold">
-                            Nama Kelas
-                        </label>
-
-                        <input
-                            type="text"
-                            id="nama_kelas"
-                            name="nama_kelas"
-                            value="{{ old('nama_kelas') }}"
-                            placeholder="Contoh: Matematika 4A"
-                            required
-                            class="h-[50px] w-full rounded-xl border border-slate-300 px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                        >
-                    </div>
-
-                    {{-- Mata Pelajaran --}}
-                    <div>
-                        <label for="mata_pelajaran"
-                            class="mb-2 block text-base font-semibold">
-                            Mata Pelajaran
-                        </label>
-
-                        <div class="relative">
-                            <select
-                                id="mata_pelajaran"
-                                name="mata_pelajaran"
-                                required
-                                class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                            >
-                                @forelse ($subjects as $subject)
-                                    <option value="{{ $subject->id }}" @selected((int) old('mata_pelajaran') === $subject->id)>{{ $subject->name }}</option>
-                                @empty
-                                    <option value="" disabled selected>Belum ada mata pelajaran. Hubungi admin.</option>
-                                @endforelse
-                            </select>
-
-                            <svg viewBox="0 0 24 24"
-                                class="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-600"
-                                fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                aria-hidden="true">
-                                <path d="m9 18 6-6-6-6"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    {{-- Rombel --}}
-                    <div>
-                        <label for="rombel"
-                            class="mb-2 block text-base font-semibold">
-                            Rombel
-                        </label>
-
-                        <div class="relative">
-                            <select
-                                id="rombel"
-                                name="rombel"
-                                required
-                                class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                            >
-                                @forelse ($rombels as $rombel)
-                                    <option value="{{ $rombel->id }}"
-                                        data-name="{{ $rombel->name }}"
-                                        data-count="{{ $rombel->students_count }}"
-                                        @selected(old('rombel') == $rombel->id)>
-                                        {{ $rombel->name }} · {{ $rombel->students_count }} siswa
-                                    </option>
-                                @empty
-                                    <option value="" disabled selected>Belum ada rombel, minta admin impor data siswa</option>
-                                @endforelse
-                            </select>
-
-                            <svg viewBox="0 0 24 24"
-                                class="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-600"
-                                fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                aria-hidden="true">
-                                <path d="m9 18 6-6-6-6"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    {{-- Tahun Ajaran --}}
-                    <div>
-                        <label for="tahun_ajaran"
-                            class="mb-2 block text-base font-semibold">
-                            Tahun Ajaran
-                        </label>
-
-                        <div class="relative">
-                            <select
-                                id="tahun_ajaran"
-                                name="tahun_ajaran"
-                                required
-                                class="h-[50px] w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 pr-10 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                            >
-                                @foreach ($academicYears as $year)
-                                    <option value="{{ $year }}" @selected(old('tahun_ajaran') === $year)>{{ $year }}</option>
-                                @endforeach
-                            </select>
-
-                            <svg viewBox="0 0 24 24"
-                                class="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-600"
-                                fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                aria-hidden="true">
-                                <path d="m9 18 6-6-6-6"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                </form>
-
-            </section>
-
-            {{-- INFORMASI ROMBEL --}}
-            <aside class="flex items-start gap-3 rounded-2xl bg-green-100 p-4 text-slate-800">
-
-                <svg viewBox="0 0 24 24"
-                    class="mt-0.5 size-5 shrink-0 text-green-700"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-
-                <p class="text-sm leading-[1.6]">
-                    Semua <span id="jumlah-siswa">0</span> siswa rombel
-                    <span id="nama-rombel">-</span> otomatis masuk ke kelas ini.
-                    Tidak perlu menambah satu per satu.
-                </p>
-
-            </aside>
-
-            {{-- TOMBOL BUAT KELAS --}}
-            <button
-                type="submit"
-                form="form-kelas"
-                class="flex h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-brand text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-                <svg viewBox="0 0 24 24" class="size-5"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="m5 12 5 5L20 7"/>
-                </svg>
-
-                Buat Kelas
-            </button>
-
-            <p class="text-sm leading-[1.6] text-slate-600">
-                Siswa pindahan bisa bergabung memakai kode kelas.
-                Kode bisa diatur di Pengaturan Kelas.
-            </p>
-
-        </main>
-
-    </div>
+        <x-button icon="check-circle" size="lg" block>Buat Kelas</x-button>
+    </form>
 
     <script>
-        const rombel = document.getElementById('rombel');
-        const jumlahSiswa = document.getElementById('jumlah-siswa');
-        const namaRombel = document.getElementById('nama-rombel');
-
-        // Jumlah siswa diambil dari data-count tiap pilihan rombel
-        const tampilkanRombel = () => {
-            const pilihan = rombel.selectedOptions[0];
-
-            jumlahSiswa.textContent = pilihan?.dataset.count ?? 0;
-            namaRombel.textContent = pilihan?.dataset.name ?? '-';
-        };
-
-        rombel.addEventListener('change', tampilkanRombel);
-        tampilkanRombel();
+        (() => {
+            const rombel = document.getElementById('rombel');
+            const tampilkan = () => {
+                const pilihan = rombel.selectedOptions[0];
+                document.getElementById('jumlah-siswa').textContent = pilihan?.dataset.count ?? 0;
+                document.getElementById('nama-rombel').textContent = pilihan?.dataset.name ?? '-';
+            };
+            rombel.addEventListener('change', tampilkan);
+            tampilkan();
+        })();
     </script>
 
-</body>
-</html>
+@endsection

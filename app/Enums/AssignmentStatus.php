@@ -41,14 +41,25 @@ enum AssignmentStatus: string
         };
     }
 
-    /** Warna badge (dibedakan warna + teks, PB-13). */
+    /** Warna badge (dibedakan warna + teks + ikon, PB-13). */
     public function badgeClass(): string
     {
         return match ($this) {
-            self::BelumDikerjakan => 'bg-amber-100 text-amber-800',
-            self::Terlambat => 'bg-red-100 text-red-700',
-            self::Diserahkan => 'bg-blue-100 text-blue-800',
-            self::Dinilai => 'bg-green-100 text-green-800',
+            self::BelumDikerjakan => 'bg-sunny-50 text-[#8a5a00]',
+            self::Terlambat => 'bg-danger-50 text-danger',
+            self::Diserahkan => 'bg-brand-50 text-brand-700',
+            self::Dinilai => 'bg-success-50 text-success',
+        };
+    }
+
+    /** Ikon Phosphor pendamping label status. */
+    public function icon(): string
+    {
+        return match ($this) {
+            self::BelumDikerjakan => 'hourglass-medium',
+            self::Terlambat => 'warning-circle',
+            self::Diserahkan => 'paper-plane-tilt',
+            self::Dinilai => 'check-circle',
         };
     }
 }

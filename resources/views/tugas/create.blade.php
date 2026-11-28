@@ -1,79 +1,73 @@
-{{-- M04 Buat/ubah tugas — SEMENTARA dari BE. Nanti diganti hasil slicing Delano. --}}
-@extends('layouts.sementara')
+{{-- M04 Buat/ubah tugas: judul, instruksi, tenggat, nilai maksimal, topik, lampiran (FR-16, PB-11). --}}
+@extends('layouts.app')
 
 @php($assignment ??= new \App\Models\Assignment)
 
-@section('title', ($assignment->exists ? 'Ubah Tugas · ' : 'Buat Tugas · ').$classroom->name)
+@section('title', $assignment->exists ? 'Ubah Tugas' : 'Buat Tugas')
+@section('back', $assignment->exists ? route('kelas.tugas.show', [$classroom, $assignment]) : route('kelas.show', $classroom))
+@section('back-label', 'Kembali')
 
 @section('content')
 
-    <a href="{{ $assignment->exists ? route('kelas.tugas.show', [$classroom, $assignment]) : route('kelas.show', $classroom) }}"
-        class="inline-flex h-12 items-center text-brand underline">← Kembali</a>
-
     <form method="POST" enctype="multipart/form-data"
         action="{{ $assignment->exists ? route('kelas.tugas.update', [$classroom, $assignment]) : route('kelas.tugas.store', $classroom) }}"
-        class="space-y-4 rounded-card border border-border bg-white p-4">
+        class="space-y-5">
         @csrf
         @if ($assignment->exists)
             @method('PUT')
         @endif
 
-        <div>
-            <label for="title" class="mb-1 block font-semibold">Judul tugas</label>
-            <input id="title" name="title" value="{{ old('title', $assignment->title) }}" required maxlength="150"
-                placeholder="Contoh: Latihan Pecahan Senilai" class="h-12 w-full rounded-control border border-border px-3">
-        </div>
+        <x-card class="space-y-4">
+            <p class="flex items-center gap-2 text-caption font-bold text-text-muted">
+                <x-subject-icon :subject="$classroom->subject" class="size-8! rounded-[10px]! [&_svg]:size-5!" />
+                {{ $classroom->name }}
+            </p>
 
-        <div>
-            <label for="instructions" class="mb-1 block font-semibold">Instruksi</label>
-            <textarea id="instructions" name="instructions" rows="4" maxlength="5000"
-                placeholder="Contoh: Kerjakan soal buku halaman 12 nomor 1–5, lalu foto hasilnya."
-                class="w-full rounded-control border border-border p-3">{{ old('instructions', $assignment->instructions) }}</textarea>
-        </div>
+            <x-text-input name="title" label="Judul tugas" :value="$assignment->title" required maxlength="150" placeholder="Contoh: Latihan Pecahan Senilai" />
 
-        <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label for="due_at" class="mb-1 block font-semibold">Tenggat (WIB)</label>
-                <input id="due_at" name="due_at" type="datetime-local" required
-                    value="{{ old('due_at', ($assignment->due_at ?? now()->addDays(3)->setTime(23, 59))->format('Y-m-d\TH:i')) }}"
-                    class="h-12 w-full rounded-control border border-border px-2">
+            <x-textarea name="instructions" label="Petunjuk untuk siswa" :value="$assignment->instructions" rows="4" maxlength="5000" optional
+                placeholder="Contoh: Kerjakan soal buku halaman 12 nomor 1 sampai 5, lalu foto hasilnya." />
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-text-input name="due_at" type="datetime-local" label="Tenggat (WIB)" required
+                    :value="($assignment->due_at ?? now()->addDays(3)->setTime(23, 59))->format('Y-m-d\TH:i')" class="px-3" />
+                <x-text-input name="max_score" type="number" label="Nilai maksimal" required min="1" max="100" inputmode="numeric"
+                    :value="$assignment->max_score ?? 100" />
             </div>
-            <div>
-                <label for="max_score" class="mb-1 block font-semibold">Nilai maksimal</label>
-                <input id="max_score" name="max_score" type="number" min="1" max="100" required inputmode="numeric"
-                    value="{{ old('max_score', $assignment->max_score ?? 100) }}" class="h-12 w-full rounded-control border border-border px-3">
-            </div>
-        </div>
+        </x-card>
 
-        <div>
-            <label for="topic_id" class="mb-1 block font-semibold">Topik</label>
-            <select id="topic_id" name="topic_id" class="h-12 w-full rounded-control border border-border px-3">
+        <x-card class="space-y-4">
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+                <x-icon name="bookmark-simple" class="size-6 text-brand" />
+                Topik
+            </h2>
+            <x-select name="topic_id" label="Pilih topik">
                 <option value="">Tanpa topik</option>
                 @foreach ($topics as $topic)
                     <option value="{{ $topic->id }}" @selected(old('topic_id', $assignment->topic_id) == $topic->id)>{{ $topic->name }}</option>
                 @endforeach
-            </select>
-            <input name="new_topic" value="{{ old('new_topic') }}" maxlength="100"
-                placeholder="atau ketik topik baru" class="mt-2 h-12 w-full rounded-control border border-border px-3">
-        </div>
+            </x-select>
+            <x-text-input name="new_topic" label="Atau buat topik baru" maxlength="100" placeholder="Contoh: Bab 2: Bangun Datar" />
+        </x-card>
 
-        @if ($assignment->exists)
-            @include('materi._lampiran-lama', ['attachments' => $assignment->attachments])
-        @endif
+        <x-card class="space-y-4">
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+                <x-icon name="paperclip" class="size-6 text-brand" />
+                Lampiran
+            </h2>
 
-        <div>
-            <label for="files" class="mb-1 block font-semibold">{{ $assignment->exists ? 'Tambah lampiran' : 'Lampiran' }} (boleh kosong · PDF, gambar, DOCX · maks 10 MB)</label>
-            <input id="files" name="files[]" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.docx"
-                class="block w-full rounded-control border border-border p-3">
-        </div>
+            @if ($assignment->exists)
+                @include('materi._lampiran-lama', ['attachments' => $assignment->attachments])
+            @endif
 
-        <div>
-            <label for="links" class="mb-1 block font-semibold">Tautan video YouTube (boleh kosong, satu per baris)</label>
-            <textarea id="links" name="links" rows="2" placeholder="https://www.youtube.com/watch?v=..."
-                class="w-full rounded-control border border-border p-3">{{ old('links') }}</textarea>
-        </div>
+            <x-file-input name="files[]" :label="$assignment->exists ? 'Tambah file' : 'File'" types="pdf,jpg,jpeg,png,docx" :max-mb="10" optional multiple />
 
-        <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">{{ $assignment->exists ? 'Simpan Perubahan' : 'Terbitkan' }}</button>
+            <x-textarea name="links" label="Tautan video YouTube" rows="2" optional hint="Satu tautan per baris." placeholder="https://www.youtube.com/watch?v=..." />
+        </x-card>
+
+        <x-button :icon="$assignment->exists ? 'floppy-disk' : 'paper-plane-tilt'" size="lg" block>
+            {{ $assignment->exists ? 'Simpan Perubahan' : 'Terbitkan' }}
+        </x-button>
     </form>
 
 @endsection

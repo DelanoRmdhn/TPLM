@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Jumlah notifikasi belum dibaca untuk tombol Notifikasi di navigasi
         View::composer(
-            ['layouts.sementara', 'notifikasi.index', 'guru.beranda', 'siswa.beranda', 'siswa.tugas'],
+            ['layouts.app', 'notifikasi.index', 'guru.beranda', 'siswa.beranda', 'siswa.tugas'],
             fn ($view) => $view->with('unreadNotifications', auth()->user()?->unreadNotifications()->count() ?? 0),
         );
     }

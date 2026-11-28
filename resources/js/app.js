@@ -1,3 +1,27 @@
+import { initCelebrate } from './confetti';
+import { initFeedback } from './feedback';
+import { checkFiles, describeTypes, initFileInputs } from './files';
+
+// Dipakai skrip di halaman (mis. form kumpul tugas)
+window.checkFiles = checkFiles;
+window.describeTypes = describeTypes;
+
+// Modul dimuat setelah HTML selesai di-parse, jadi elemen sudah ada
+initFeedback();
+initFileInputs();
+initCelebrate();
+
+// Tombol mata di kolom kata sandi (components/password-input)
+document.querySelectorAll('[data-toggle-password]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.togglePassword);
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.setAttribute('aria-pressed', String(show));
+        button.setAttribute('aria-label', show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+    });
+});
+
 // PWA: daftarkan service worker (lihat public/sw.js)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

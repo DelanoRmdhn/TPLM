@@ -1,45 +1,56 @@
-{{-- M08b Hasil cek impor (sebelum Simpan) — SEMENTARA dari BE. Nanti diganti hasil slicing Delano. --}}
-@extends('layouts.sementara')
+{{-- M08b Hasil cek impor (sebelum Simpan): berapa siap dibuat, baris mana yang bermasalah. --}}
+@extends('layouts.app')
 
 @section('title', 'Cek Data Impor')
+@section('back', route('admin.impor.index'))
+@section('back-label', 'Kembali ke Impor')
 
 @section('content')
 
     @php($ready = count($check['valid']))
     @php($problemCount = count($check['problems']))
 
-    <p class="text-text-muted">Data {{ $check['type'] }} belum disimpan. Periksa dulu hasil cek di bawah.</p>
+    <p class="flex items-start gap-2 text-text-muted">
+        <x-icon name="info" class="mt-0.5 size-5" />
+        Data {{ $check['type'] }} belum disimpan. Periksa dulu hasil cek di bawah.
+    </p>
 
-    <section class="grid grid-cols-2 gap-3">
-        <div class="rounded-card border border-green-200 bg-green-50 p-4">
-            <p class="text-caption text-green-800">Siap dibuat</p>
-            <p class="text-h1 font-bold text-green-800">{{ $ready }}</p>
-        </div>
-        <div class="rounded-card border border-red-200 bg-red-50 p-4">
-            <p class="text-caption text-red-700">Baris bermasalah</p>
-            <p class="text-h1 font-bold text-red-700">{{ $problemCount }}</p>
-        </div>
-    </section>
+    <div class="grid grid-cols-2 gap-3">
+        <x-stat :value="$ready" label="Siap dibuat" icon="check-circle" tone="success" />
+        <x-stat :value="$problemCount" label="Baris bermasalah" icon="warning-circle" tone="danger" />
+    </div>
 
     @if ($problemCount > 0)
-        <section class="rounded-card border border-border bg-white p-4">
-            <h2 class="font-bold">Baris bermasalah (tidak dibuat)</h2>
-            <ul class="mt-2 divide-y divide-border">
+        <x-card padding="p-4">
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold text-danger">
+                <x-icon name="warning-circle" class="size-6" />
+                Baris bermasalah (tidak dibuat)
+            </h2>
+            <ul class="mt-3 space-y-2">
                 @foreach ($check['problems'] as $problem)
-                    <li class="py-2"><span class="font-semibold">Baris {{ $problem['row'] }}:</span> {{ $problem['message'] }}</li>
+                    <li class="rounded-control bg-danger-50 p-3"><span class="font-extrabold text-danger">Baris {{ $problem['row'] }}:</span> {{ $problem['message'] }}</li>
                 @endforeach
             </ul>
-        </section>
+        </x-card>
     @endif
 
     @if ($ready > 0)
-        <details class="rounded-card border border-border bg-white p-4">
-            <summary class="flex min-h-12 cursor-pointer items-center font-bold">Lihat {{ $ready }} akun yang akan dibuat</summary>
-            <ul class="mt-2 divide-y divide-border">
+        <details class="group rounded-card bg-surface p-4 shadow-card">
+            <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 font-extrabold">
+                <x-icon name="users-three" class="size-6 text-success" />
+                <span class="flex-1">Lihat {{ $ready }} akun yang akan dibuat</span>
+                <x-icon name="caret-down" variant="bold" class="size-5 text-text-muted transition group-open:rotate-180" />
+            </summary>
+            <ul class="mt-3 space-y-2">
                 @foreach ($check['valid'] as $row)
-                    <li class="flex justify-between gap-2 py-2">
-                        <span>{{ $row['name'] }}</span>
-                        <span class="text-caption text-text-muted">{{ $row['username'] }}{{ $row['rombel'] ? ' · '.$row['rombel'] : '' }}</span>
+                    <li class="flex items-center justify-between gap-3 rounded-control bg-background p-3">
+                        <span class="min-w-0 truncate font-bold">{{ $row['name'] }}</span>
+                        <span class="flex shrink-0 gap-2">
+                            <x-chip icon="identification-card">{{ $row['username'] }}</x-chip>
+                            @if ($row['rombel'])
+                                <x-chip icon="users-three">{{ $row['rombel'] }}</x-chip>
+                            @endif
+                        </span>
                     </li>
                 @endforeach
             </ul>
@@ -47,13 +58,15 @@
 
         <form method="POST" action="{{ route('admin.impor.simpan') }}">
             @csrf
-            <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">Simpan {{ $ready }} Akun</button>
+            <x-button variant="success" icon="floppy-disk" size="lg" block>Simpan {{ $ready }} Akun</x-button>
         </form>
         <p class="text-center text-caption text-text-muted">Akun dibuat dengan kata sandi awal yang wajib diganti saat login pertama.</p>
     @else
-        <p class="rounded-card border border-border bg-white p-4">Belum ada baris yang bisa dibuat. Perbaiki file Excel lalu unggah lagi.</p>
+        <x-card>
+            <x-empty-state icon="file-x" title="Belum bisa disimpan">Belum ada baris yang bisa dibuat. Perbaiki file Excel lalu unggah lagi.</x-empty-state>
+        </x-card>
     @endif
 
-    <a href="{{ route('admin.impor.index') }}" class="flex h-12 items-center justify-center rounded-control border border-border">Pilih File Lain</a>
+    <x-button :href="route('admin.impor.index')" variant="secondary" icon="arrow-counter-clockwise" block>Pilih File Lain</x-button>
 
 @endsection

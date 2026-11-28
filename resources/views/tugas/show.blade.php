@@ -1,108 +1,192 @@
-{{-- M05 Detail tugas & kumpul foto (siswa) — SEMENTARA dari BE. Nanti diganti hasil slicing Delano. --}}
-@extends('layouts.sementara')
+{{-- M05 Detail tugas & kumpul foto (siswa), FR-18–FR-20, PB-12. Guru melihat tugas/pengumpulan.blade.php. --}}
+@extends('layouts.app')
 
-@section('title', $assignment->title)
+@section('title', 'Tugas')
+@section('back', route('kelas.show', $classroom))
+@section('back-label', 'Kembali ke '.$classroom->name)
+@section('topbar', 'overlay')
+
+{{-- Judul tugas di atas blok berwarna mapel --}}
+@section('hero')
+    <x-subject-hero :subject="$classroom->subject">
+        <p class="font-semibold opacity-90">{{ $classroom->name }}</p>
+        <h1 class="mt-1 text-display leading-tight font-extrabold">{{ $assignment->title }}</h1>
+        <x-status-badge :status="$status" class="mt-3 bg-white! ring-2 ring-white/40" />
+    </x-subject-hero>
+@endsection
 
 @section('content')
 
-    <a href="{{ route('kelas.show', $classroom) }}" class="inline-flex h-12 items-center text-brand underline">← {{ $classroom->name }}</a>
-
-    <section class="space-y-2 rounded-card border border-border bg-white p-4">
-        <span class="inline-block rounded-full px-3 py-1 text-caption font-semibold {{ $status->badgeClass() }}">{{ $status->label() }}</span>
-        <h1 class="text-h1 font-bold">{{ $assignment->title }}</h1>
-        <p class="{{ $assignment->isPastDue() ? 'text-danger' : 'text-text-muted' }}">
-            Tenggat: {{ $assignment->due_at->translatedFormat('l, j F Y, H.i') }} WIB
-        </p>
-        <p class="text-caption text-text-muted">Nilai maksimal {{ $assignment->max_score }}</p>
+    {{-- Tugasnya --}}
+    <x-card class="space-y-4">
+        <div class="grid grid-cols-2 gap-2">
+            <div @class(['rounded-control p-3', 'bg-danger-50 text-danger' => $assignment->isPastDue(), 'bg-background' => ! $assignment->isPastDue()])>
+                <p class="flex items-center gap-1.5 text-caption font-bold {{ $assignment->isPastDue() ? '' : 'text-text-muted' }}">
+                    <x-icon name="alarm" class="size-4" />
+                    Tenggat
+                </p>
+                <p class="mt-0.5 font-extrabold">{{ $assignment->due_at->translatedFormat('D, j M Y') }}</p>
+                <p class="text-caption font-semibold">{{ $assignment->due_at->format('H.i') }} WIB</p>
+            </div>
+            <div class="rounded-control bg-background p-3">
+                <p class="flex items-center gap-1.5 text-caption font-bold text-text-muted">
+                    <x-icon name="star" class="size-4" />
+                    Nilai maksimal
+                </p>
+                <p class="mt-0.5 text-h2 font-extrabold">{{ $assignment->max_score }}</p>
+            </div>
+        </div>
 
         @if ($assignment->instructions)
-            <p class="whitespace-pre-line pt-2">{{ $assignment->instructions }}</p>
+            <div>
+                <p class="mb-1 flex items-center gap-1.5 font-extrabold">
+                    <x-icon name="list-checks" class="size-5 text-brand" />
+                    Petunjuk
+                </p>
+                <p class="whitespace-pre-line">{{ $assignment->instructions }}</p>
+            </div>
         @endif
 
         @include('tugas._lampiran', ['attachments' => $assignment->attachments])
-    </section>
+    </x-card>
 
     {{-- Nilai & umpan balik (FR-25) --}}
     @if ($grade)
-        <section class="rounded-card border border-green-200 bg-green-50 p-4">
-            <p class="text-caption text-green-800">Nilai kamu</p>
-            <p class="text-h1 font-bold text-green-800">{{ $grade->score }} <span class="text-body font-normal">/ {{ $assignment->max_score }}</span></p>
+        <section class="relative overflow-hidden rounded-card bg-success p-5 text-white shadow-card">
+            <span class="absolute -top-6 -right-6 size-28 rounded-full bg-white/10" aria-hidden="true"></span>
+            <div class="relative flex items-center gap-4">
+                <span class="flex size-20 shrink-0 flex-col items-center justify-center rounded-full bg-white text-success motion-safe:animate-pop">
+                    <span class="text-[30px] leading-none font-extrabold">{{ $grade->score }}</span>
+                    <span class="text-caption font-bold">dari {{ $assignment->max_score }}</span>
+                </span>
+                <div>
+                    <p class="flex items-center gap-1.5 text-h2 font-extrabold">
+                        <x-icon name="trophy" variant="fill" class="size-6 text-sunny" />
+                        Nilai kamu
+                    </p>
+                    <p class="text-white/85">Tugasmu sudah dinilai guru.</p>
+                </div>
+            </div>
             @if ($grade->feedback)
-                <p class="mt-2 whitespace-pre-line">💬 {{ $grade->feedback }}</p>
+                <div class="relative mt-4 rounded-[18px] rounded-tl-[6px] bg-white p-4 text-text">
+                    <p class="mb-1 flex items-center gap-1.5 text-caption font-bold text-text-muted">
+                        <x-icon name="chat-circle-text" class="size-4" />
+                        Pesan dari guru
+                    </p>
+                    <p class="whitespace-pre-line">{{ $grade->feedback }}</p>
+                </div>
             @endif
         </section>
     @endif
 
     {{-- Yang sudah diserahkan --}}
     @if ($submission?->isSubmitted())
-        <section class="space-y-3 rounded-card border border-border bg-white p-4">
-            <h2 class="font-bold">Tugas yang kamu serahkan</h2>
-            <p class="text-caption text-text-muted">
-                {{ $submission->submitted_at->translatedFormat('l, j F Y, H.i') }} WIB
-                @if ($submission->isLate()) · <span class="font-semibold text-danger">Terlambat</span> @endif
-            </p>
+        <x-card class="space-y-3">
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+                <x-icon name="paper-plane-tilt" variant="fill" class="size-6 text-brand" />
+                Tugas yang kamu serahkan
+            </h2>
+            <div class="flex flex-wrap gap-2">
+                <x-chip icon="calendar-check">{{ $submission->submitted_at->translatedFormat('j M Y, H.i') }} WIB</x-chip>
+                @if ($submission->isLate())
+                    <x-chip icon="warning-circle" tone="danger">Terlambat</x-chip>
+                @endif
+            </div>
 
             @if ($submission->body)
-                <p class="whitespace-pre-line">{{ $submission->body }}</p>
+                <p class="whitespace-pre-line rounded-control bg-background p-3">{{ $submission->body }}</p>
             @endif
 
-            <div class="grid grid-cols-2 gap-2">
-                @foreach ($submission->files as $file)
-                    <a href="{{ route('pengumpulan.file', $file) }}" target="_blank" class="block overflow-hidden rounded-control border border-border">
-                        @if ($file->isImage())
-                            <img src="{{ route('pengumpulan.file', $file) }}" alt="{{ $file->original_name }}" class="aspect-square w-full object-cover" loading="lazy">
-                        @else
-                            <span class="flex aspect-square items-center justify-center p-2 text-center text-caption">📄 {{ $file->original_name }}</span>
-                        @endif
-                    </a>
-                @endforeach
-            </div>
+            @if ($submission->files->isNotEmpty())
+                <div class="grid grid-cols-3 gap-2">
+                    @foreach ($submission->files as $file)
+                        <a href="{{ route('pengumpulan.file', $file) }}" target="_blank" class="block overflow-hidden rounded-control bg-background">
+                            @if ($file->isImage())
+                                <img src="{{ route('pengumpulan.file', $file) }}" alt="{{ $file->original_name }}" class="aspect-square w-full object-cover" loading="lazy">
+                            @else
+                                <span class="flex aspect-square flex-col items-center justify-center gap-1 p-2 text-center">
+                                    <x-icon :name="$file->isPdf() ? 'file-pdf' : 'file-doc'" class="size-8 text-brand" />
+                                    <span class="line-clamp-2 text-caption break-all">{{ $file->original_name }}</span>
+                                </span>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            @endif
 
             @if (! $grade && ! $classroom->isArchived())
                 <form method="POST" action="{{ route('kelas.tugas.batal', [$classroom, $assignment]) }}"
-                    onsubmit="return confirm(@js($assignment->isPastDue() ? 'Batalkan pengumpulan? Tenggat sudah lewat, jadi kalau dikumpulkan ulang akan ditandai terlambat.' : 'Batalkan pengumpulan? Foto dan jawaban yang sudah dikirim akan dihapus.'))">
+                    data-confirm-title="Batalkan pengumpulan?"
+                    data-confirm="{{ $assignment->isPastDue() ? 'Foto dan jawaban yang sudah dikirim akan dihapus. Tenggat sudah lewat, jadi kalau dikumpulkan ulang akan ditandai terlambat.' : 'Foto dan jawaban yang sudah dikirim akan dihapus. Kamu bisa mengumpulkan ulang.' }}"
+                    data-confirm-label="Ya, batalkan" data-confirm-tone="danger">
                     @csrf
-                    <button type="submit" class="h-12 w-full rounded-control border border-red-300 font-semibold text-danger">Batalkan Pengumpulan</button>
+                    <x-button variant="ghost" icon="arrow-counter-clockwise" block class="text-danger hover:bg-danger-50">Batalkan Pengumpulan</x-button>
                 </form>
             @endif
-        </section>
+        </x-card>
 
     {{-- Form kumpul (PB-12): foto dari kamera / galeri, file, atau teks --}}
     @elseif (! $grade && ! $classroom->isArchived())
         <form id="form-kumpul" method="POST" action="{{ route('kelas.tugas.kumpul', [$classroom, $assignment]) }}" enctype="multipart/form-data"
-            class="space-y-3 rounded-card border border-border bg-white p-4">
+            class="space-y-4 rounded-card bg-surface p-5 shadow-card">
             @csrf
 
-            <h2 class="font-bold">Kumpulkan tugas</h2>
+            <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+                <x-icon name="upload-simple" class="size-6 text-brand" />
+                Kumpulkan tugas
+            </h2>
 
             @if ($assignment->isPastDue())
-                <p class="rounded-control bg-red-50 p-3 text-caption text-red-700">Tenggat sudah lewat. Kamu masih bisa mengumpulkan, tapi akan ditandai terlambat.</p>
+                <p class="flex items-start gap-2 rounded-control bg-danger-50 p-3 font-semibold text-danger">
+                    <x-icon name="warning-circle" variant="fill" class="mt-0.5 size-5" />
+                    Tenggat sudah lewat. Kamu masih bisa mengumpulkan, tapi akan ditandai terlambat.
+                </p>
             @endif
 
+            {{-- Hanya JPG/PNG (kamera) dan JPG/PNG/PDF/DOCX (file), sama dengan yang diterima server --}}
             <div class="grid grid-cols-2 gap-3">
-                <label class="flex h-12 cursor-pointer items-center justify-center rounded-control bg-brand font-semibold text-white">
-                    📷 Ambil Foto
-                    <input type="file" accept="image/*" capture="environment" class="sr-only" data-picker>
+                <label class="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[18px] bg-brand font-extrabold text-white shadow-button active:translate-y-[3px] active:shadow-none has-focus-visible:outline-3 has-focus-visible:outline-brand-200">
+                    <x-icon name="camera" variant="fill" class="size-8" />
+                    Ambil Foto
+                    <input type="file" accept="image/jpeg,image/png" capture="environment" class="sr-only" data-picker>
                 </label>
-                <label class="flex h-12 cursor-pointer items-center justify-center rounded-control border border-brand font-semibold text-brand">
-                    🖼️ Pilih File
-                    <input type="file" accept="image/*,.pdf,.docx" multiple class="sr-only" data-picker>
+                <label class="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[18px] border-2 border-dashed border-brand-200 bg-brand-50 font-extrabold text-brand active:bg-brand-100 has-focus-visible:outline-3 has-focus-visible:outline-brand-200">
+                    <x-icon name="images" class="size-8" />
+                    Pilih File
+                    <input type="file" accept=".jpg,.jpeg,.png,.pdf,.docx,image/jpeg,image/png,application/pdf" multiple class="sr-only" data-picker>
                 </label>
             </div>
 
             {{-- Input yang benar-benar dikirim; diisi lewat JavaScript setelah foto dikompres --}}
             <input type="file" name="files[]" id="files" multiple class="hidden">
 
-            <ul id="daftar-file" class="space-y-2"></ul>
-            <p id="info-file" class="text-caption text-text-muted">Bisa beberapa foto. Foto otomatis dikecilkan supaya cepat terkirim.</p>
+            <ul id="daftar-file" class="grid grid-cols-3 gap-2 empty:hidden" aria-label="File yang akan dikirim"></ul>
+            <p id="info-file" class="flex items-center gap-1.5 text-caption text-text-muted">
+                <x-icon name="info" class="size-4" />
+                <span data-info-text>Bisa beberapa foto (JPG/PNG), PDF, atau Word. Foto otomatis dikecilkan supaya cepat terkirim.</span>
+            </p>
 
             <div>
-                <label for="body" class="mb-1 block font-semibold">Jawaban teks (boleh kosong)</label>
-                <textarea id="body" name="body" rows="3" maxlength="5000" class="w-full rounded-control border border-border p-3">{{ old('body') }}</textarea>
+                <label for="body" class="mb-1.5 block font-bold">Jawaban tulisan <span class="font-semibold text-text-muted">(boleh kosong)</span></label>
+                <textarea id="body" name="body" rows="3" maxlength="5000" placeholder="Tulis jawabanmu di sini"
+                    class="w-full rounded-control border-2 border-border bg-surface p-4 outline-none focus:border-brand focus:ring-4 focus:ring-brand-100">{{ old('body') }}</textarea>
             </div>
 
-            <button type="submit" id="tombol-kirim" class="h-12 w-full rounded-control bg-green-700 font-semibold text-white">Serahkan Tugas</button>
+            <x-button id="tombol-kirim" variant="success" icon="paper-plane-tilt" size="lg" block>Serahkan Tugas</x-button>
         </form>
+
+        {{-- Cetakan untuk pratinjau file (diisi JavaScript) --}}
+        <template id="file-tile">
+            <li class="relative">
+                <div data-preview class="flex aspect-square items-center justify-center overflow-hidden rounded-control bg-background">
+                    <x-icon name="file-text" class="size-9 text-brand" data-file-icon />
+                </div>
+                <p data-name class="mt-1 truncate text-caption text-text-muted"></p>
+                <button type="button" data-remove class="absolute -top-2 -right-2 flex size-9 items-center justify-center rounded-full bg-text text-white shadow-raised">
+                    <x-icon name="x" variant="bold" class="size-4" />
+                </button>
+            </li>
+        </template>
 
         <script>
             (() => {
@@ -112,10 +196,14 @@
                 const form = document.getElementById('form-kumpul');
                 const realInput = document.getElementById('files');
                 const list = document.getElementById('daftar-file');
-                const info = document.getElementById('info-file');
+                const info = document.querySelector('#info-file [data-info-text]');
+                const defaultInfo = info.textContent;
                 const button = document.getElementById('tombol-kirim');
+                const tile = document.getElementById('file-tile');
                 const picked = [];
                 const canBuild = typeof DataTransfer !== 'undefined';
+                const ALLOWED = @js(\App\Models\SubmissionFile::ALLOWED_EXTENSIONS);
+                const MAX_MB = @js(\App\Models\SubmissionFile::MAX_SIZE_KB / 1024);
 
                 // Browser lama: kirim langsung tanpa kompres
                 if (!canBuild) {
@@ -123,11 +211,9 @@
                     return;
                 }
 
-                const formatSize = (b) => b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
-
                 // NFR-05: kecilkan foto sebelum diunggah
                 async function compress(file) {
-                    if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+                    if (!file.type.startsWith('image/')) return file;
                     try {
                         const bitmap = await createImageBitmap(file);
                         const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
@@ -145,40 +231,45 @@
                 }
 
                 function render() {
-                    list.innerHTML = '';
+                    list.replaceChildren();
                     picked.forEach((file, i) => {
-                        const li = document.createElement('li');
-                        li.className = 'flex items-center gap-3 rounded-control border border-border p-2';
+                        const item = tile.content.firstElementChild.cloneNode(true);
                         if (file.type.startsWith('image/')) {
                             const img = document.createElement('img');
                             img.src = URL.createObjectURL(file);
-                            img.className = 'size-14 shrink-0 rounded object-cover';
-                            img.alt = '';
-                            li.append(img);
+                            img.className = 'size-full object-cover';
+                            img.alt = file.name;
+                            item.querySelector('[data-preview]').replaceChildren(img);
                         }
-                        const text = document.createElement('span');
-                        text.className = 'min-w-0 flex-1 truncate';
-                        text.textContent = file.name + ' · ' + formatSize(file.size);
-                        const remove = document.createElement('button');
-                        remove.type = 'button';
-                        remove.className = 'h-12 shrink-0 rounded-control border border-border px-3';
-                        remove.textContent = 'Hapus';
+                        item.querySelector('[data-name]').textContent = file.name;
+                        const remove = item.querySelector('[data-remove]');
+                        remove.setAttribute('aria-label', 'Hapus ' + file.name);
                         remove.addEventListener('click', () => { picked.splice(i, 1); render(); });
-                        li.append(text, remove);
-                        list.append(li);
+                        list.append(item);
                     });
 
                     const dt = new DataTransfer();
                     picked.forEach((f) => dt.items.add(f));
                     realInput.files = dt.files;
-                    info.textContent = picked.length ? picked.length + ' file siap dikirim.' : 'Bisa beberapa foto. Foto otomatis dikecilkan supaya cepat terkirim.';
+                    info.textContent = picked.length ? picked.length + ' file siap dikirim.' : defaultInfo;
                 }
 
                 document.querySelectorAll('[data-picker]').forEach((picker) => {
                     picker.addEventListener('change', async () => {
-                        info.textContent = 'Menyiapkan foto...';
-                        for (const file of picker.files) {
-                            if (picked.length >= MAX_FILES) { alert('Maksimal ' + MAX_FILES + ' foto/file.'); break; }
+                        // Tolak file yang tidak didukung (mis. SVG, GIF, HEIC) sebelum masuk daftar
+                        const { accepted, problems } = window.checkFiles(picker.files, ALLOWED, MAX_MB);
+                        if (problems.length) {
+                            window.showSheet(problems.length > 1 ? 'Beberapa file tidak bisa dikirim' : 'File ini tidak bisa dikirim', problems);
+                        }
+
+                        if (accepted.length) {
+                            info.textContent = 'Menyiapkan foto...';
+                        }
+                        for (const file of accepted) {
+                            if (picked.length >= MAX_FILES) {
+                                window.showToast('Paling banyak ' + MAX_FILES + ' foto atau file.', 'error');
+                                break;
+                            }
                             picked.push(await compress(file));
                         }
                         picker.value = '';
@@ -188,7 +279,7 @@
 
                 form.addEventListener('submit', () => {
                     button.disabled = true;
-                    button.textContent = 'Mengirim...';
+                    button.lastChild.textContent = ' Mengirim...';
                 });
             })();
         </script>

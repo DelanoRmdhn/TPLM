@@ -61,7 +61,7 @@ class StudentTasksTest extends TestCase
                 'Besok', 'Tugas Besok', 'Besok, 12.00 WIB',
                 'Minggu ini', 'Tugas Minggu Ini',
                 'Nanti', 'Tugas Nanti',
-                'Lewat tenggat', 'Tugas Lewat', 'lewat 2 hari', 'Terlambat',
+                'Lewat tenggat', 'Tugas Lewat', 'Terlambat', 'lewat 2 hari',
             ]);
     }
 
@@ -111,7 +111,6 @@ class StudentTasksTest extends TestCase
             ->assertSeeInOrder(['Tenggat terdekat', 'Paling Dekat', 'Kerjakan Sekarang'])
             // Belum dikerjakan: maks 3, termasuk yang terlambat
             ->assertSeeInOrder(['Belum dikerjakan', 'Lewat Kemarin', 'Paling Dekat', 'Lusa', 'Kelas Saya'])
-            ->assertSee('4 tugas belum dikerjakan')
             ->assertSee(route('siswa.nilai'), false);
     }
 

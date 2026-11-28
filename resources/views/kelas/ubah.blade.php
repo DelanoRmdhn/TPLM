@@ -1,68 +1,65 @@
-{{-- Ubah, arsipkan, hapus kelas — SEMENTARA dari BE. Nanti diganti hasil slicing Delano. --}}
-@extends('layouts.sementara')
+{{-- Ubah, arsipkan, atau hapus kelas (guru pengajar). --}}
+@extends('layouts.app')
 
-@section('title', 'Ubah Kelas · '.$classroom->name)
+@section('title', 'Ubah Kelas')
+@section('back', route('kelas.show', $classroom))
+@section('back-label', 'Kembali ke kelas')
 
 @section('content')
 
-    <a href="{{ route('kelas.show', $classroom) }}" class="inline-flex h-12 items-center text-brand underline">← Kembali ke kelas</a>
-
-    <form method="POST" action="{{ route('kelas.update', $classroom) }}" class="space-y-4 rounded-card border border-border bg-white p-4">
+    <form method="POST" action="{{ route('kelas.update', $classroom) }}" class="space-y-4 rounded-card bg-surface p-5 shadow-card">
         @csrf
         @method('PUT')
 
-        <h1 class="text-h1 font-bold">Ubah Kelas</h1>
+        <x-text-input name="nama_kelas" label="Nama kelas" :value="$classroom->name" required maxlength="100" />
 
-        <div>
-            <label for="nama_kelas" class="mb-1 block font-semibold">Nama kelas</label>
-            <input id="nama_kelas" name="nama_kelas" required maxlength="100" value="{{ old('nama_kelas', $classroom->name) }}"
-                class="h-12 w-full rounded-control border border-border px-3">
-        </div>
+        <x-select name="mata_pelajaran" label="Mata pelajaran" required>
+            @foreach ($subjects as $subject)
+                <option value="{{ $subject->id }}" @selected((int) old('mata_pelajaran', $classroom->subject_id) === $subject->id)>{{ $subject->name }}</option>
+            @endforeach
+        </x-select>
 
-        <div>
-            <label for="mata_pelajaran" class="mb-1 block font-semibold">Mata pelajaran</label>
-            <select id="mata_pelajaran" name="mata_pelajaran" required class="h-12 w-full rounded-control border border-border px-3">
-                @foreach ($subjects as $subject)
-                    <option value="{{ $subject->id }}" @selected((int) old('mata_pelajaran', $classroom->subject_id) === $subject->id)>{{ $subject->name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select name="tahun_ajaran" label="Tahun ajaran" required>
+            @foreach ($academicYears as $year)
+                <option value="{{ $year }}" @selected(old('tahun_ajaran', $classroom->academic_year) === $year)>{{ $year }}</option>
+            @endforeach
+        </x-select>
 
-        <div>
-            <label for="tahun_ajaran" class="mb-1 block font-semibold">Tahun ajaran</label>
-            <select id="tahun_ajaran" name="tahun_ajaran" required class="h-12 w-full rounded-control border border-border px-3">
-                @foreach ($academicYears as $year)
-                    <option value="{{ $year }}" @selected(old('tahun_ajaran', $classroom->academic_year) === $year)>{{ $year }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <button type="submit" class="h-12 w-full rounded-control bg-brand font-semibold text-white">Simpan</button>
+        <x-button icon="floppy-disk" block>Simpan</x-button>
     </form>
 
-    <section class="space-y-3 rounded-card border border-border bg-white p-4">
-        <h2 class="font-bold">Arsipkan kelas</h2>
-        <p class="text-caption text-text-muted">Kelas hilang dari beranda guru dan siswa. Materi, tugas, dan nilai tetap tersimpan, dan kelas bisa dipulihkan kapan saja.</p>
+    <x-card class="space-y-3">
+        <h2 class="flex items-center gap-2 text-h2 font-extrabold">
+            <x-icon name="archive" class="size-6 text-brand" />
+            Arsipkan kelas
+        </h2>
+        <p class="text-text-muted">Kelas hilang dari beranda guru dan siswa. Materi, tugas, dan nilai tetap tersimpan, dan kelas bisa dipulihkan kapan saja.</p>
         <form method="POST" action="{{ route('kelas.archive', $classroom) }}"
-            onsubmit="return confirm(@js('Arsipkan kelas '.$classroom->name.'?'))">
+            data-confirm-title="Arsipkan kelas ini?" data-confirm="{{ $classroom->name.' akan hilang dari beranda. Kamu bisa memulihkannya kapan saja.' }}" data-confirm-label="Ya, arsipkan">
             @csrf
-            <button type="submit" class="h-12 w-full rounded-control border border-brand font-semibold text-brand">Arsipkan Kelas</button>
+            <x-button variant="secondary" icon="archive" block>Arsipkan Kelas</x-button>
         </form>
-    </section>
+    </x-card>
 
-    <section class="space-y-3 rounded-card border border-red-200 bg-white p-4">
-        <h2 class="font-bold text-danger">Hapus kelas</h2>
+    <x-card class="space-y-3 ring-2 ring-danger/20">
+        <h2 class="flex items-center gap-2 text-h2 font-extrabold text-danger">
+            <x-icon name="trash" class="size-6" />
+            Hapus kelas
+        </h2>
         @if ($canDelete)
-            <p class="text-caption text-text-muted">Kelas beserta semua materi dan tugasnya dihapus permanen.</p>
+            <p class="text-text-muted">Kelas beserta semua materi dan tugasnya dihapus permanen.</p>
             <form method="POST" action="{{ route('kelas.destroy', $classroom) }}"
-                onsubmit="return confirm(@js('Hapus kelas '.$classroom->name.' beserta semua materi dan tugasnya? Tidak bisa dibatalkan.'))">
+                data-confirm-title="Hapus kelas ini?" data-confirm="{{ $classroom->name.' beserta semua materi dan tugasnya akan dihapus. Tidak bisa dibatalkan.' }}" data-confirm-label="Ya, hapus" data-confirm-tone="danger">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="h-12 w-full rounded-control bg-danger font-semibold text-white">Hapus Kelas</button>
+                <x-button variant="danger" icon="trash" block>Hapus Kelas</x-button>
             </form>
         @else
-            <p class="text-caption text-text-muted">Kelas ini sudah punya pengumpulan atau nilai siswa, jadi tidak bisa dihapus. Arsipkan saja.</p>
+            <p class="flex items-start gap-2 rounded-control bg-background p-3 text-text-muted">
+                <x-icon name="info" class="mt-0.5 size-5" />
+                Kelas ini sudah punya pengumpulan atau nilai siswa, jadi tidak bisa dihapus. Arsipkan saja.
+            </p>
         @endif
-    </section>
+    </x-card>
 
 @endsection

@@ -1,224 +1,113 @@
+{{-- Beranda siswa (PB-08, FR-10, FR-26): sapaan, ringkasan, tenggat terdekat, tugas yang belum dikerjakan, kelas yang diikuti. --}}
+@extends('layouts.app')
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @include('partials.pwa-head')
-    <title>Beranda Siswa</title>
+@section('title', 'Beranda')
+@section('topbar', 'none')
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@section('content')
 
-<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+    @php
+        $user = auth()->user();
+        $firstName = \Illuminate\Support\Str::before($user->name.' ', ' ');
+        $totalPending = $pendingPerClass->sum();
+        $hour = now()->hour;
+        $greeting = match (true) {
+            $hour < 11 => 'Selamat pagi,',
+            $hour < 15 => 'Selamat siang,',
+            $hour < 18 => 'Selamat sore,',
+            default => 'Selamat malam,',
+        };
+    @endphp
 
-    {{-- Mobile-first app container --}}
-    <div class="mx-auto min-h-screen w-full max-w-[390px] bg-slate-50 pb-20">
-
-        {{-- HEADER --}}
-        <header class="flex items-center gap-3 border-b border-slate-200 bg-white px-[18px] py-3.5">
-            <div class="flex size-[46px] shrink-0 items-center justify-center rounded-2xl bg-brand text-white">
-                <svg viewBox="0 0 24 24" class="size-7" fill="none"
-                    stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m2 9 10-5 10 5-10 5L2 9Z"/>
-                    <path d="M6 11v5c3.5 3 8.5 3 12 0v-5"/>
-                    <path d="M22 9v6"/>
-                </svg>
-            </div>
-
-            <div class="min-w-0">
-                <h1 class="text-[18px] leading-tight font-bold">
-                    Halo, {{ auth()->user()->name }}!
-                </h1>
-                <p class="mt-1 text-sm text-slate-600">
-                    Siswa{{ auth()->user()->rombel ? ' · Kelas '.auth()->user()->rombel->name : '' }}
-                </p>
-            </div>
-        </header>
-
-        <main class="space-y-3.5 px-[18px] py-5">
-
-            {{-- TENGGAT TERDEKAT --}}
-            @if ($nearest)
-            <section class="rounded-2xl bg-amber-100 p-4">
-                <div class="flex items-center gap-2 text-amber-700">
-                    <svg viewBox="0 0 24 24" class="size-5 shrink-0"
-                        fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="9"/>
-                        <path d="M12 7v5l3 2"/>
-                    </svg>
-                    <span class="text-sm font-medium">Tenggat terdekat</span>
-                </div>
-
-                <h2 class="mt-2 text-[17px] leading-snug font-bold">
-                    {{ $nearest->assignment->title }}
-                </h2>
-
-                <p class="mt-2 text-sm leading-5 text-slate-700">
-                    {{ $nearest->assignment->classroom->subject->name }} · {{ $nearest->dueLabel }}
-                </p>
-
-                <a href="{{ route('kelas.tugas.show', [$nearest->assignment->classroom_id, $nearest->assignment]) }}"
-                    class="mt-2.5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
-                    <svg viewBox="0 0 24 24" class="size-5"
-                        fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m9 18 6-6-6-6"/>
-                    </svg>
-                    Kerjakan Sekarang
-                </a>
-            </section>
+    {{-- Sapaan --}}
+    <header class="flex items-start justify-between gap-3 pt-2">
+        <div class="min-w-0">
+            <p class="text-text-muted">{{ $greeting }}</p>
+            <h1 class="text-display font-extrabold">{{ $firstName }}!</h1>
+            @if ($user->rombel)
+                <span class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-caption font-bold text-text-muted shadow-card">
+                    <x-icon name="student" class="size-4 text-brand" />
+                    Kelas {{ $user->rombel->name }}
+                </span>
             @endif
+        </div>
+        <a href="{{ route('notifikasi.index') }}" aria-label="Notifikasi{{ $unreadNotifications > 0 ? ', ada yang belum dibaca' : '' }}"
+            class="relative flex size-12 shrink-0 items-center justify-center rounded-full bg-surface text-text shadow-card active:scale-95">
+            <x-icon name="bell" variant="fill" class="size-6" />
+            @if ($unreadNotifications > 0)
+                <span class="absolute top-2.5 right-3 size-2.5 rounded-full bg-danger ring-2 ring-surface" aria-hidden="true"></span>
+            @endif
+        </a>
+    </header>
 
-            {{-- BELUM DIKERJAKAN (maks 3, urut tenggat terdekat) --}}
-            <section>
-                <div class="flex items-center justify-between gap-2 py-1">
-                    <h2 class="text-[17px] font-bold">
-                        Belum dikerjakan
-                    </h2>
-
-                    <a href="{{ route('siswa.tugas') }}"
-                        class="flex min-h-[46px] shrink-0 items-center rounded-xl bg-slate-100 px-4 text-sm font-semibold text-slate-800 hover:bg-slate-200">
-                        Lihat Semua
-                    </a>
-                </div>
-
-                <div class="mt-3 space-y-3">
-                    @forelse ($pending as $row)
-                        @include('siswa._kartu-tugas', ['row' => $row])
-                    @empty
-                        <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                            Tidak ada tugas yang belum dikerjakan. 🎉
-                        </p>
-                    @endforelse
-                </div>
-            </section>
-
-            {{-- KELAS SAYA --}}
-            <section>
-                <h2 class="py-1 text-[17px] font-bold">
-                    Kelas Saya
-                </h2>
-
-                <div class="mt-3 space-y-3">
-
-                    @php($warna = ['bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-amber-100 text-amber-700'])
-
-                    @forelse ($classrooms as $kelas)
-                        <a href="{{ route('kelas.show', $kelas) }}"
-                            class="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-300">
-                            <div class="flex size-[50px] shrink-0 items-center justify-center rounded-xl {{ $warna[$loop->index % 3] }}">
-                                <svg viewBox="0 0 24 24" class="size-6"
-                                    fill="none" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M12 7v14"/>
-                                    <path d="M12 7C9 4 5 4 3 5v14c3-1 6-1 9 2"/>
-                                    <path d="M12 7c3-3 7-3 9-2v14c-3-1-6-1-9 2"/>
-                                </svg>
-                            </div>
-
-                            <div class="min-w-0 flex-1">
-                                <h3 class="font-bold">{{ $kelas->name }}</h3>
-                                <p class="mt-1 text-sm text-slate-600">
-                                    {{ $kelas->subject->name }} · {{ $kelas->teacher->name }}
-                                </p>
-                                @if ($belum = $pendingPerClass->get($kelas->id))
-                                    <p class="mt-1 text-xs font-semibold text-orange-700">
-                                        {{ $belum }} tugas belum dikerjakan
-                                    </p>
-                                @endif
-                            </div>
-
-                            <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-slate-600"
-                                fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="m9 18 6-6-6-6"/>
-                            </svg>
-                        </a>
-                    @empty
-                        <p class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                            Kamu belum masuk kelas apa pun. Tunggu guru memasukkan rombelmu.
-                        </p>
-                    @endforelse
-
-                </div>
-            </section>
-
-        </main>
+    {{-- Ringkasan --}}
+    <div class="grid grid-cols-2 gap-3">
+        <a href="{{ route('siswa.tugas') }}" class="relative overflow-hidden rounded-[22px] bg-mapel-amber-solid p-4 text-[#5c3d00] shadow-card active:scale-[0.98]">
+            <span class="absolute -top-3 -right-3 flex size-14 items-center justify-center rounded-full bg-white/30" aria-hidden="true">
+                <x-icon name="clipboard-text" variant="fill" class="size-6" />
+            </span>
+            <p class="pr-10 text-caption font-bold">Tugas menunggu</p>
+            <p class="mt-2 text-[34px] leading-none font-extrabold">{{ $totalPending }}</p>
+        </a>
+        <div class="relative overflow-hidden rounded-[22px] bg-mapel-purple-solid p-4 text-white shadow-card">
+            <span class="absolute -top-3 -right-3 flex size-14 items-center justify-center rounded-full bg-white/20" aria-hidden="true">
+                <x-icon name="books" variant="fill" class="size-6" />
+            </span>
+            <p class="pr-10 text-caption font-bold opacity-90">Kelas diikuti</p>
+            <p class="mt-2 text-[34px] leading-none font-extrabold">{{ $classrooms->count() }}</p>
+        </div>
     </div>
 
-    {{-- BOTTOM NAVIGATION --}}
-    <nav aria-label="Navigasi utama"
-        class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white">
-        <div class="mx-auto grid h-[66px] w-full max-w-[390px] grid-cols-5 px-1">
+    {{-- Tenggat terdekat --}}
+    @if ($nearest)
+        @php($nearestSubject = $nearest->assignment->classroom->subject)
+        <section class="relative overflow-hidden rounded-[26px] p-5 shadow-card {{ $nearestSubject->solidClasses() }}">
+            <span class="pointer-events-none absolute -right-8 -bottom-10 size-36 rounded-full bg-white/15" aria-hidden="true"></span>
+            <span class="pointer-events-none absolute -top-4 right-4 opacity-25" aria-hidden="true">
+                <x-icon :name="$nearestSubject->iconName()" variant="fill" class="size-24" />
+            </span>
 
-            <a href="#" aria-current="page"
-                class="flex flex-col items-center justify-center gap-0.5 text-brand">
-                <span class="flex h-8 w-12 items-center justify-center rounded-full bg-blue-100">
-                    <svg viewBox="0 0 24 24" class="size-6"
-                        fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m3 10 9-7 9 7"/>
-                        <path d="M5 9v11h14V9"/>
-                        <path d="M9 20v-7h6v7"/>
-                    </svg>
-                </span>
-                <span class="text-[11px] font-semibold">Beranda</span>
+            <p class="relative inline-flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1 text-caption font-extrabold">
+                <x-icon name="alarm" variant="fill" class="size-4" />
+                Tenggat terdekat
+            </p>
+            <h2 class="relative mt-3 text-h1 leading-tight font-extrabold">{{ $nearest->assignment->title }}</h2>
+            <p class="relative mt-1 font-semibold opacity-90">{{ $nearestSubject->name }}, {{ $nearest->dueLabel }}</p>
+
+            <a href="{{ route('kelas.tugas.show', [$nearest->assignment->classroom_id, $nearest->assignment]) }}"
+                class="relative mt-4 flex min-h-13 items-center justify-center gap-2 rounded-full bg-white font-extrabold text-text shadow-raised active:scale-[0.98]">
+                <x-icon name="rocket-launch" variant="fill" class="size-5 text-brand" />
+                Kerjakan Sekarang
             </a>
+        </section>
+    @endif
 
-            <a href="{{ route('siswa.tugas') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="5" y="4" width="14" height="17" rx="2"/>
-                    <path d="M9 4.5V3h6v1.5"/>
-                    <path d="m9 12 2 2 4-4"/>
-                </svg>
-                <span class="text-[11px] font-medium">Tugas</span>
-            </a>
+    {{-- Belum dikerjakan: maks 3, urut tenggat terdekat --}}
+    <section class="space-y-3 pt-2">
+        <x-section-title :href="route('siswa.tugas')" action="Lihat semua">Belum dikerjakan</x-section-title>
 
-            <a href="{{ route('siswa.nilai') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
-                </svg>
-                <span class="text-[11px] font-medium">Nilai</span>
-            </a>
+        @forelse ($pending as $row)
+            <x-task-card :row="$row" in-pending-list />
+        @empty
+            <x-card>
+                <x-empty-state icon="confetti" title="Hore, semua beres!">Tidak ada tugas yang belum dikerjakan.</x-empty-state>
+            </x-card>
+        @endforelse
+    </section>
 
-            <a href="{{ route('notifikasi.index') }}"
-                class="relative flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                    <path d="M10 21h4"/>
-                </svg>
-                @if ($unreadNotifications > 0)
-                    <span class="absolute top-2 left-1/2 ml-1 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-                        {{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}<span class="sr-only"> belum dibaca</span>
-                    </span>
-                @endif
-                <span class="text-[11px] font-medium">Notifikasi</span>
-            </a>
+    {{-- Kelas yang diikuti: kartu berwarna mapel --}}
+    <section class="space-y-3 pt-2">
+        <x-section-title>Kelas Saya</x-section-title>
 
-            <a href="{{ route('akun') }}"
-                class="flex flex-col items-center justify-center gap-0.5 text-slate-600">
-                <svg viewBox="0 0 24 24" class="size-6"
-                    fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
-                </svg>
-                <span class="text-[11px] font-medium">Akun</span>
-            </a>
-
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            @forelse ($classrooms as $kelas)
+                <x-subject-card :classroom="$kelas" :href="route('kelas.show', $kelas)" />
+            @empty
+                <x-card class="col-span-2 sm:col-span-3">
+                    <x-empty-state icon="books" title="Belum ada kelas">Tunggu gurumu memasukkan rombelmu ke kelas.</x-empty-state>
+                </x-card>
+            @endforelse
         </div>
-    </nav>
+    </section>
 
-</body>
-</html>
+@endsection

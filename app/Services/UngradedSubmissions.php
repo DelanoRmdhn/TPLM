@@ -30,7 +30,7 @@ class UngradedSubmissions
             ->whereExists(fn ($q) => $q->select(DB::raw(1))->from('classroom_members')
                 ->whereColumn('classroom_members.classroom_id', 'assignments.classroom_id')
                 ->whereColumn('classroom_members.user_id', 'submissions.student_id'))
-            ->with(['assignment.classroom', 'student'])
+            ->with(['assignment.classroom.subject', 'student'])
             ->orderBy('submissions.submitted_at')
             ->get(['submissions.*', 'assignments.classroom_id']);
     }

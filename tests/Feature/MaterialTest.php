@@ -89,9 +89,9 @@ class MaterialTest extends TestCase
         $this->actingAs($this->siswa)->get("/kelas/{$this->kelas->id}")
             ->assertOk()
             ->assertSeeInOrder(['Bab 1: Pecahan', 'Mengenal Pecahan', 'Tanpa topik', 'Info Umum'])
-            ->assertDontSee('+ Buat Materi');
+            ->assertDontSee(route('kelas.materi.create', $this->kelas), false);
 
-        $this->actingAs($this->guru)->get("/kelas/{$this->kelas->id}")->assertSee('+ Buat Materi');
+        $this->actingAs($this->guru)->get("/kelas/{$this->kelas->id}")->assertSee(route('kelas.materi.create', $this->kelas), false);
     }
 
     public function test_buat_materi_dengan_topik_baru(): void

@@ -203,7 +203,8 @@ class AssignmentTest extends TestCase
         $this->actingAs($this->ani)->post($this->url($tugas, '/kumpul'), [
             'files' => [UploadedFile::fake()->image('hal1.jpg'), UploadedFile::fake()->image('hal2.jpg')],
             'body' => 'Sudah saya kerjakan.',
-        ])->assertSessionHas('status', 'Tugas berhasil diserahkan!');
+        ])->assertSessionHas('status', 'Tugas berhasil diserahkan!')
+            ->assertSessionHas('celebrate', true);
 
         $submission = Submission::first();
         $this->assertSame(2, $submission->files()->count());
